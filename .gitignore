@@ -9,7 +9,6 @@ __pycache__/
 build/
 build-*/
 dist/
-*.bin
 
 temp
 
