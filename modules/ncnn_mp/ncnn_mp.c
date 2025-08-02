@@ -20,7 +20,7 @@ static mp_obj_t ncnn_mp_allocator_create_pool_allocator(void) {
     if (!allocator) {
         return mp_const_none;  // TODO
     }
-    return mp_obj_new_int_from_ptr(allocator);
+    return mp_obj_new_int_from_ull((uintptr_t)allocator);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_allocator_create_pool_allocator_obj, ncnn_mp_allocator_create_pool_allocator);
 
@@ -31,7 +31,7 @@ static mp_obj_t ncnn_mp_allocator_create_unlocked_pool(void) {
     if (!allocator) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(allocator);
+    return mp_obj_new_int_from_ull((uintptr_t)allocator);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_allocator_create_unlocked_pool_obj, ncnn_mp_allocator_create_unlocked_pool);
 
@@ -53,7 +53,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_allocator_destroy_obj, ncnn_mp_allocato
 // Python: ncnn_mp.option_create() -> int (handle)
 static mp_obj_t ncnn_mp_option_create(void) {
     ncnn_option_t opt = ncnn_option_create();
-    return mp_obj_new_int_from_ptr(opt);
+    return mp_obj_new_int_from_ull((uintptr_t)opt);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_option_create_obj, ncnn_mp_option_create);
 
@@ -152,7 +152,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_option_set_use_vulkan_compute_obj, ncnn
 // Python: ncnn_mp.mat_create() -> int (handle)
 static mp_obj_t ncnn_mp_mat_create(void) {
     ncnn_mat_t mat = ncnn_mat_create();
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_mat_create_obj, ncnn_mp_mat_create);
 
@@ -165,7 +165,7 @@ static mp_obj_t ncnn_mp_mat_create_1d(mp_obj_t w_obj, mp_obj_t allocator_obj) {
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_mat_create_1d_obj, ncnn_mp_mat_create_1d);
 
@@ -179,7 +179,7 @@ static mp_obj_t ncnn_mp_mat_create_2d(mp_obj_t w_obj, mp_obj_t h_obj, mp_obj_t a
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_mat_create_2d_obj, ncnn_mp_mat_create_2d);
 
@@ -194,7 +194,7 @@ static mp_obj_t ncnn_mp_mat_create_3d(mp_obj_t w_obj, mp_obj_t h_obj, mp_obj_t c
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_4(ncnn_mp_mat_create_3d_obj, ncnn_mp_mat_create_3d);
 
@@ -210,7 +210,7 @@ static mp_obj_t ncnn_mp_mat_create_4d(mp_obj_t w_obj, mp_obj_t h_obj, mp_obj_t d
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_5(ncnn_mp_mat_create_4d_obj, ncnn_mp_mat_create_4d);
 
@@ -225,7 +225,7 @@ static mp_obj_t ncnn_mp_mat_create_external_1d(mp_obj_t w_obj, mp_obj_t data_obj
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_mat_create_external_1d_obj, ncnn_mp_mat_create_external_1d);
 
@@ -241,7 +241,7 @@ static mp_obj_t ncnn_mp_mat_create_external_2d(mp_obj_t w_obj, mp_obj_t h_obj, m
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_4(ncnn_mp_mat_create_external_2d_obj, ncnn_mp_mat_create_external_2d);
 
@@ -258,7 +258,7 @@ static mp_obj_t ncnn_mp_mat_create_external_3d(mp_obj_t w_obj, mp_obj_t h_obj, m
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_5(ncnn_mp_mat_create_external_3d_obj, ncnn_mp_mat_create_external_3d);
 
@@ -276,7 +276,7 @@ static mp_obj_t ncnn_mp_mat_create_external_4d(mp_obj_t w_obj, mp_obj_t h_obj, m
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_6(ncnn_mp_mat_create_external_4d_obj, ncnn_mp_mat_create_external_4d);
 
@@ -291,7 +291,7 @@ static mp_obj_t ncnn_mp_mat_create_1d_elem(mp_obj_t w_obj, mp_obj_t elemsize_obj
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_4(ncnn_mp_mat_create_1d_elem_obj, ncnn_mp_mat_create_1d_elem);
 
@@ -307,7 +307,7 @@ static mp_obj_t ncnn_mp_mat_create_2d_elem(mp_obj_t w_obj, mp_obj_t h_obj, mp_ob
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_5(ncnn_mp_mat_create_2d_elem_obj, ncnn_mp_mat_create_2d_elem);
 
@@ -324,7 +324,7 @@ static mp_obj_t ncnn_mp_mat_create_3d_elem(mp_obj_t w_obj, mp_obj_t h_obj, mp_ob
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_6(ncnn_mp_mat_create_3d_elem_obj, ncnn_mp_mat_create_3d_elem);
 
@@ -342,7 +342,7 @@ static mp_obj_t ncnn_mp_mat_create_4d_elem(mp_obj_t w_obj, mp_obj_t h_obj, mp_ob
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_7(ncnn_mp_mat_create_4d_elem_obj, ncnn_mp_mat_create_4d_elem);
 
@@ -359,7 +359,7 @@ static mp_obj_t ncnn_mp_mat_create_external_1d_elem(mp_obj_t w_obj, mp_obj_t dat
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_5(ncnn_mp_mat_create_external_1d_elem_obj, ncnn_mp_mat_create_external_1d_elem);
 
@@ -377,7 +377,7 @@ static mp_obj_t ncnn_mp_mat_create_external_2d_elem(mp_obj_t w_obj, mp_obj_t h_o
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_6(ncnn_mp_mat_create_external_2d_elem_obj, ncnn_mp_mat_create_external_2d_elem);
 
@@ -396,7 +396,7 @@ static mp_obj_t ncnn_mp_mat_create_external_3d_elem(mp_obj_t w_obj, mp_obj_t h_o
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_7(ncnn_mp_mat_create_external_3d_elem_obj, ncnn_mp_mat_create_external_3d_elem);
 
@@ -416,7 +416,7 @@ static mp_obj_t ncnn_mp_mat_create_external_4d_elem(mp_obj_t w_obj, mp_obj_t h_o
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_8(ncnn_mp_mat_create_external_4d_elem_obj, ncnn_mp_mat_create_external_4d_elem);
 
@@ -435,7 +435,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_mat_destroy_obj, ncnn_mp_mat_destroy);
 // Python: ncnn_mp.mat_fill_float(mat_handle, value)
 static mp_obj_t ncnn_mp_mat_fill_float(mp_obj_t mat_obj, mp_obj_t value_obj) {
     ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(mat_obj);
-    float value = mp_obj_get_float(value_obj);
+    float value = (float)(float)mp_obj_get_float(value_obj);
     ncnn_mat_fill_float(mat, value);
     return mp_const_none;
 }
@@ -443,16 +443,16 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_mat_fill_float_obj, ncnn_mp_mat_fill_fl
 
 // c_api:  ncnn_mat_t ncnn_mat_clone(const ncnn_mat_t mat, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_clone(mat_handle, allocator) -> int (handle)
-static mp_obj_t ncnn_mp_mat_clone(mp_obj_t mat_obj) {
+static mp_obj_t ncnn_mp_mat_clone(mp_obj_t mat_obj, mp_obj_t allocator_obj) {
     ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(mat_obj);
     ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
     ncnn_mat_t cloned_mat = ncnn_mat_clone(mat, allocator);
     if (!cloned_mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(cloned_mat);
+    return mp_obj_new_int_from_ull((uintptr_t)cloned_mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_mat_clone_obj, ncnn_mp_mat_clone);
+static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_mat_clone_obj, ncnn_mp_mat_clone);
 
 // c_api:  ncnn_mat_t ncnn_mat_reshape_1d(const ncnn_mat_t mat, int w, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_reshape_1d(mat_handle, w, allocator) -> int (handle)
@@ -464,7 +464,7 @@ static mp_obj_t ncnn_mp_mat_reshape_1d(mp_obj_t mat_obj, mp_obj_t w_obj, mp_obj_
     if (!reshaped_mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(reshaped_mat);
+    return mp_obj_new_int_from_ull((uintptr_t)reshaped_mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_mat_reshape_1d_obj, ncnn_mp_mat_reshape_1d);
 
@@ -479,7 +479,7 @@ static mp_obj_t ncnn_mp_mat_reshape_2d(mp_obj_t mat_obj, mp_obj_t w_obj, mp_obj_
     if (!reshaped_mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(reshaped_mat);
+    return mp_obj_new_int_from_ull((uintptr_t)reshaped_mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_4(ncnn_mp_mat_reshape_2d_obj, ncnn_mp_mat_reshape_2d);
 
@@ -495,7 +495,7 @@ static mp_obj_t ncnn_mp_mat_reshape_3d(mp_obj_t mat_obj, mp_obj_t w_obj, mp_obj_
     if (!reshaped_mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(reshaped_mat);
+    return mp_obj_new_int_from_ull((uintptr_t)reshaped_mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_5(ncnn_mp_mat_reshape_3d_obj, ncnn_mp_mat_reshape_3d);
 
@@ -512,7 +512,7 @@ static mp_obj_t ncnn_mp_mat_reshape_4d(mp_obj_t mat_obj, mp_obj_t w_obj, mp_obj_
     if (!reshaped_mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(reshaped_mat);
+    return mp_obj_new_int_from_ull((uintptr_t)reshaped_mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_6(ncnn_mp_mat_reshape_4d_obj, ncnn_mp_mat_reshape_4d);
 
@@ -579,7 +579,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_mat_get_cstep_obj, ncnn_mp_mat_get_cste
 static mp_obj_t ncnn_mp_mat_get_data_ptr(mp_obj_t mat_obj) {
     ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(mat_obj);
     void* data_ptr = ncnn_mat_get_data(mat);
-    return mp_obj_new_int_from_ptr(data_ptr);
+    return mp_obj_new_int_from_ull((uintptr_t)data_ptr);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_mat_get_data_ptr_obj, ncnn_mp_mat_get_data_ptr);
 
@@ -589,7 +589,7 @@ static mp_obj_t ncnn_mp_mat_get_channel_data(mp_obj_t mat_obj, mp_obj_t channel_
     ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(mat_obj);
     int channel = mp_obj_get_int(channel_obj);
     void* channel_data_ptr = ncnn_mat_get_channel_data(mat, channel);
-    return mp_obj_new_int_from_ptr(channel_data_ptr);
+    return mp_obj_new_int_from_ull((uintptr_t)channel_data_ptr);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_mat_get_channel_data_obj, ncnn_mp_mat_get_channel_data);
 
@@ -616,7 +616,7 @@ static mp_obj_t ncnn_mp_mat_from_pixels(size_t n_args, const mp_obj_t *args) {
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_obj, 6, 6, ncnn_mp_mat_from_pixels);
 
@@ -641,7 +641,7 @@ static mp_obj_t ncnn_mp_mat_from_pixels_resize(size_t n_args, const mp_obj_t *ar
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_resize_obj, 8, 8, ncnn_mp_mat_from_pixels_resize);
 
@@ -668,7 +668,7 @@ static mp_obj_t ncnn_mp_mat_from_pixels_roi(size_t n_args, const mp_obj_t *args)
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_roi_obj, 10, 10, ncnn_mp_mat_from_pixels_roi);
 
@@ -697,7 +697,7 @@ static mp_obj_t ncnn_mp_mat_from_pixels_roi_resize(size_t n_args, const mp_obj_t
     if (!mat) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_roi_resize_obj, 12, 12, ncnn_mp_mat_from_pixels_roi_resize);
 
@@ -836,7 +836,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_blob_get_shape_obj, ncnn_mp_blob_get_sh
 // Python: ncnn_mp.paramdict_create() -> int (handle)
 static mp_obj_t ncnn_mp_paramdict_create(void) {
     ncnn_paramdict_t paramdict = ncnn_paramdict_create();
-    return mp_obj_new_int_from_ptr(paramdict);
+    return mp_obj_new_int_from_ull((uintptr_t)paramdict);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_paramdict_create_obj, ncnn_mp_paramdict_create);
 
@@ -877,7 +877,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_paramdict_get_int_obj, ncnn_mp_paramdic
 static mp_obj_t ncnn_mp_paramdict_get_float(mp_obj_t pd_obj, mp_obj_t id_obj, mp_obj_t def_obj) {
     ncnn_paramdict_t pd = (ncnn_paramdict_t)mp_obj_get_int(pd_obj);
     int id = mp_obj_get_int(id_obj);
-    float def = mp_obj_get_float(def_obj);
+    float def = (float)mp_obj_get_float(def_obj);
     float result = ncnn_paramdict_get_float(pd, id, def);
     return mp_obj_new_float(result);
 }
@@ -893,7 +893,7 @@ static mp_obj_t ncnn_mp_paramdict_get_array(mp_obj_t pd_obj, mp_obj_t id_obj, mp
     if (!result) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(result);
+    return mp_obj_new_int_from_ull((uintptr_t)result);
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_paramdict_get_array_obj, ncnn_mp_paramdict_get_array);
 
@@ -913,7 +913,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_paramdict_set_int_obj, ncnn_mp_paramdic
 static mp_obj_t ncnn_mp_paramdict_set_float(mp_obj_t pd_obj, mp_obj_t id_obj, mp_obj_t f_obj) {
     ncnn_paramdict_t pd = (ncnn_paramdict_t)mp_obj_get_int(pd_obj);
     int id = mp_obj_get_int(id_obj);
-    float f = mp_obj_get_float(f_obj);
+    float f = (float)mp_obj_get_float(f_obj);
     ncnn_paramdict_set_float(pd, id, f);
     return mp_const_none;
 }
@@ -938,7 +938,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_paramdict_set_array_obj, ncnn_mp_paramd
 // Python: ncnn_mp.datareader_create() -> int (handle)
 static mp_obj_t ncnn_mp_datareader_create(void) {
     ncnn_datareader_t dr = ncnn_datareader_create();
-    return mp_obj_new_int_from_ptr(dr);
+    return mp_obj_new_int_from_ull((uintptr_t)dr);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_datareader_create_obj, ncnn_mp_datareader_create);
 
@@ -956,7 +956,7 @@ static mp_obj_t ncnn_mp_datareader_create_from_memory(mp_obj_t data_obj) {
     if (!dr) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(dr);
+    return mp_obj_new_int_from_ull((uintptr_t)dr);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_datareader_create_from_memory_obj, ncnn_mp_datareader_create_from_memory);
 
@@ -983,7 +983,7 @@ static mp_obj_t ncnn_mp_modelbin_create_from_datareader(mp_obj_t dr_obj) {
     if (!mb) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mb);
+    return mp_obj_new_int_from_ull((uintptr_t)mb);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_modelbin_create_from_datareader_obj, ncnn_mp_modelbin_create_from_datareader);
 
@@ -1005,7 +1005,7 @@ static mp_obj_t ncnn_mp_modelbin_create_from_mat_array(mp_obj_t weights_list_obj
     if (!mb) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mb);
+    return mp_obj_new_int_from_ull((uintptr_t)mb);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_modelbin_create_from_mat_array_obj, ncnn_mp_modelbin_create_from_mat_array);
 
@@ -1026,7 +1026,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_modelbin_destroy_obj, ncnn_mp_modelbin_
 // Python: ncnn_mp.layer_create() -> int (handle)
 static mp_obj_t ncnn_mp_layer_create(void) {
     ncnn_layer_t layer = ncnn_layer_create();
-    return mp_obj_new_int_from_ptr(layer);
+    return mp_obj_new_int_from_ull((uintptr_t)layer);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_layer_create_obj, ncnn_mp_layer_create);
 
@@ -1038,7 +1038,7 @@ static mp_obj_t ncnn_mp_layer_create_by_typeindex(mp_obj_t typeindex_obj) {
     if (!layer) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(layer);
+    return mp_obj_new_int_from_ull((uintptr_t)layer);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_layer_create_by_typeindex_obj, ncnn_mp_layer_create_by_typeindex);
 
@@ -1051,7 +1051,7 @@ static mp_obj_t ncnn_mp_layer_create_by_type(mp_obj_t type_obj) {
     if (!layer) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(layer);
+    return mp_obj_new_int_from_ull((uintptr_t)layer);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_layer_create_by_type_obj, ncnn_mp_layer_create_by_type);
 
@@ -1300,7 +1300,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_blob_get_top_shape_obj, ncnn_mp_blob_ge
 // Python: ncnn_mp.net_create() -> int (handle)
 static mp_obj_t ncnn_mp_net_create(void) {
     ncnn_net_t net = ncnn_net_create();
-    return mp_obj_new_int_from_ptr(net);
+    return mp_obj_new_int_from_ull((uintptr_t)net);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_net_create_obj, ncnn_mp_net_create);
 
@@ -1318,7 +1318,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_net_destroy_obj, ncnn_mp_net_destroy);
 static mp_obj_t ncnn_mp_net_get_option(mp_obj_t net_obj) {
     ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(net_obj);
     ncnn_option_t opt = ncnn_net_get_option(net);
-    return mp_obj_new_int_from_ptr(opt);
+    return mp_obj_new_int_from_ull((uintptr_t)opt);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_net_get_option_obj, ncnn_mp_net_get_option);
 
@@ -1527,7 +1527,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_net_get_output_index_obj, ncnn_mp_net_g
 static mp_obj_t ncnn_mp_extractor_create(mp_obj_t net_obj) {
     ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(net_obj);
     ncnn_extractor_t ex = ncnn_extractor_create(net);
-    return mp_obj_new_int_from_ptr(ex);
+    return mp_obj_new_int_from_ull((uintptr_t)ex);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_extractor_create_obj, ncnn_mp_extractor_create);
 
@@ -1573,7 +1573,7 @@ static mp_obj_t ncnn_mp_extractor_extract(mp_obj_t ex_obj, mp_obj_t name_obj) {
     if (result != 0) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_extractor_extract_obj, ncnn_mp_extractor_extract);
 #endif // NCNN_STRING
@@ -1599,7 +1599,7 @@ static mp_obj_t ncnn_mp_extractor_extract_index(mp_obj_t ex_obj, mp_obj_t index_
     if (result != 0) {
         return mp_const_none;
     }
-    return mp_obj_new_int_from_ptr(mat);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_extractor_extract_index_obj, ncnn_mp_extractor_extract_index);
 
@@ -1618,7 +1618,7 @@ static mp_obj_t ncnn_mp_copy_make_border(size_t n_args, const mp_obj_t *args) {
     int left = mp_obj_get_int(args[4]);
     int right = mp_obj_get_int(args[5]);
     int type = mp_obj_get_int(args[6]);
-    float v = mp_obj_get_float(args[7]);
+    float v = (float)mp_obj_get_float(args[7]);
     ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(args[8]);
     ncnn_copy_make_border(src, dst, top, bottom, left, right, type, v, opt);
     return mp_const_none;
@@ -1638,7 +1638,7 @@ static mp_obj_t ncnn_mp_copy_make_border_3d(size_t n_args, const mp_obj_t *args)
     int front = mp_obj_get_int(args[6]);
     int behind = mp_obj_get_int(args[7]);
     int type = mp_obj_get_int(args[8]);
-    float v = mp_obj_get_float(args[9]);
+    float v = (float)mp_obj_get_float(args[9]);
     ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(args[10]);
     ncnn_copy_make_border_3d(src, dst, top, bottom, left, right, front, behind, type, v, opt);
     return mp_const_none;
