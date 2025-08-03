@@ -2,8 +2,8 @@
 -- 这个文件应当使用 xmake 进行运行，因为这其中使用了 xmake 针对字符串处理的拓展接口
 
 -- configs
-local c_source_file_path = "src/ncnn_mp.c"
-local output_file_path = "temp"
+local c_source_file_path = "modules/ncnn_mp/ncnn_mp.c"
+local output_file_path = "temp.txt"
 local module_prefix = "ncnn_mp"
 
 local file = io.open(c_source_file_path, "r")
@@ -43,9 +43,6 @@ for _, func in ipairs(functions) do
     outfile:write(line)
 end
 
-outfile:write("\n    // --- Manually add constants below ---\n")
-outfile:write("    // { MP_ROM_QSTR(MP_QSTR_MAT_PIXEL_BGR), MP_ROM_INT(2) },\n")
-outfile:write("    // ...\n")
 outfile:write("};\n")
 outfile:write("static MP_DEFINE_CONST_DICT(ncnn_mp_module_globals, ncnn_mp_module_globals_table);\n")
 

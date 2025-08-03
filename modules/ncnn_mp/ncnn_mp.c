@@ -17,9 +17,6 @@ static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_version_obj, ncnn_mp_version);
 // Python: ncnn_mp.allocator_create_pool_allocator() -> int (handle)
 static mp_obj_t ncnn_mp_allocator_create_pool_allocator(void) {
     ncnn_allocator_t allocator = ncnn_allocator_create_pool_allocator();
-    if (!allocator) {
-        return mp_const_none;  // TODO
-    }
     return mp_obj_new_int_from_ull((uintptr_t)allocator);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_allocator_create_pool_allocator_obj, ncnn_mp_allocator_create_pool_allocator);
@@ -28,9 +25,6 @@ static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_allocator_create_pool_allocator_obj, nc
 // Python: ncnn_mp.allocator_create_unlocked_pool() -> int (handle)
 static mp_obj_t ncnn_mp_allocator_create_unlocked_pool(void) {
     ncnn_allocator_t allocator = ncnn_allocator_create_unlocked_pool_allocator();
-    if (!allocator) {
-        return mp_const_none;
-    }
     return mp_obj_new_int_from_ull((uintptr_t)allocator);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_allocator_create_unlocked_pool_obj, ncnn_mp_allocator_create_unlocked_pool);
@@ -39,12 +33,33 @@ static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_allocator_create_unlocked_pool_obj, ncn
 // Python: ncnn_mp.allocator_destroy(allocator_handle)
 static mp_obj_t ncnn_mp_allocator_destroy(mp_obj_t allocator_obj) {
     ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
-    if (allocator) {
-        ncnn_allocator_destroy(allocator);
-    }
+    ncnn_allocator_destroy(allocator);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_allocator_destroy_obj, ncnn_mp_allocator_destroy);
+
+// ------------------
+/* allocator function pointer api */
+// ------------------
+// c_api: void* (*fast_malloc)(ncnn_allocator_t allocator, size_t size);
+// Python: ncnn_mp.allocator_fast_malloc(allocator_handle, size) -> int (handle)
+static mp_obj_t ncnn_mp_allocator_fast_malloc(mp_obj_t allocator_obj, mp_obj_t size_obj) {
+    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
+    size_t size = (size_t)mp_obj_get_int(size_obj);
+    void* ptr = allocator->fast_malloc(allocator, size);
+    return mp_obj_new_int_from_ull((uintptr_t)ptr);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_allocator_fast_malloc_obj, ncnn_mp_allocator_fast_malloc);
+
+// c_api: void (*fast_free)(ncnn_allocator_t allocator, void* ptr);
+// Python: ncnn_mp.allocator_fast_free(allocator_handle, ptr) -> None
+static mp_obj_t ncnn_mp_allocator_fast_free(mp_obj_t allocator_obj, mp_obj_t ptr_obj) {
+    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
+    void* ptr = (void*)mp_obj_get_int(ptr_obj);
+    allocator->fast_free(allocator, ptr);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_allocator_fast_free_obj, ncnn_mp_allocator_fast_free);
 
 // ------------------
 /* option api */
@@ -146,7 +161,6 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_option_set_use_vulkan_compute_obj, ncnn
 
 // ------------------
 /* mat api */
-// NULL: TODO
 // ------------------
 // c_api:  ncnn_mat_t ncnn_mat_create(void);
 // Python: ncnn_mp.mat_create() -> int (handle)
@@ -613,6 +627,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_mat_get_channel_data_obj, ncnn_mp_mat_g
 // ------------------
 /* mat pixel api */
 // ------------------
+#if NCNN_PIXEL
 // c_api:  ncnn_mat_t ncnn_mat_from_pixels(const unsigned char* pixels, int type, int w, int h, int stride, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_from_pixels(pixel_bytes, type, w, h, stride, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_from_pixels(size_t n_args, const mp_obj_t *args) {
@@ -753,6 +768,7 @@ static mp_obj_t ncnn_mp_mat_to_pixels_resize(size_t n_args, const mp_obj_t *args
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_to_pixels_resize_obj, 6, 6, ncnn_mp_mat_to_pixels_resize);
+#endif /* NCNN_PIXEL */
 
 // c_api:  void ncnn_mat_substract_mean_normalize(ncnn_mat_t mat, const float* mean_vals, const float* norm_vals);
 // Python: ncnn_mp.mat_substract_mean_normalize(mat_handle, mean_buffer, norm_buffer) -> None
@@ -797,9 +813,9 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_flatten_obj, ncnn_mp_flatten);
 // ------------------
 /* blob api */
 // ------------------
-#if NCNN_STRING
 // c_api:  const char* ncnn_blob_get_name(const ncnn_blob_t blob);
 // Python: ncnn_mp.blob_get_name(blob_handle) -> str
+#if NCNN_STRING
 static mp_obj_t ncnn_mp_blob_get_name(mp_obj_t blob_obj) {
     ncnn_blob_t blob = (ncnn_blob_t)mp_obj_get_int(blob_obj);
     const char* name = ncnn_blob_get_name(blob);
@@ -960,7 +976,16 @@ static mp_obj_t ncnn_mp_datareader_create(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_datareader_create_obj, ncnn_mp_datareader_create);
 
-// TODO: ncnn_datareader_create_from_stdio
+// c_api: ncnn_datareader_t ncnn_datareader_create_from_stdio(FILE* fp);
+// Python: ncnn_mp.datareader_create_from_stdio(fp) -> int (handle)
+#if NCNN_STDIO
+static mp_obj_t ncnn_mp_datareader_create_from_stdio(mp_obj_t file_obj) {
+    FILE* fp = (FILE*)mp_obj_get_int(file_obj);
+    ncnn_datareader_t dr = ncnn_datareader_create_from_stdio(fp);
+    return mp_obj_new_int_from_ull((uintptr_t)dr);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_datareader_create_from_stdio_obj, ncnn_mp_datareader_create_from_stdio);
+#endif /* NCNN_STDIO */
 
 // c_api:  ncnn_datareader_t ncnn_datareader_create_from_memory(const unsigned char** mem);
 // Python: ncnn_mp.datareader_create_from_memory(data_bytes) -> int (handle)
@@ -989,6 +1014,37 @@ static mp_obj_t ncnn_mp_datareader_destroy(mp_obj_t dr_obj) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_datareader_destroy_obj, ncnn_mp_datareader_destroy);
 
+// ------------------
+/* datareader function pointer api */
+// ------------------
+// c_api: int (*scan)(ncnn_datareader_t dr, const char* format, void* p);
+// Python: ncnn_mp.datareader_scan(dr_handle, format_str, data_buffer) -> int
+#if NCNN_STRING
+static mp_obj_t ncnn_mp_datareader_scan(mp_obj_t dr_obj, mp_obj_t format_obj, mp_obj_t data_obj) {
+    ncnn_datareader_t dr = (ncnn_datareader_t)mp_obj_get_int(dr_obj);
+    const char* format = mp_obj_str_get_str(format_obj);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_WRITE);
+    
+    int result = dr->scan(dr, format, bufinfo.buf);
+    return mp_obj_new_int(result);
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_datareader_scan_obj, ncnn_mp_datareader_scan);
+#endif /* NCNN_STRING */
+
+// c_api: size_t (*read)(ncnn_datareader_t dr, void* buf, size_t size);
+// Python: ncnn_mp.datareader_read(dr_handle, buffer, size) -> int (bytes_read)
+static mp_obj_t ncnn_mp_datareader_read(mp_obj_t dr_obj, mp_obj_t buffer_obj, mp_obj_t size_obj) {
+    ncnn_datareader_t dr = (ncnn_datareader_t)mp_obj_get_int(dr_obj);
+    size_t size = (size_t)mp_obj_get_int(size_obj);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer_obj, &bufinfo, MP_BUFFER_WRITE);
+    size = (size > bufinfo.len) ? bufinfo.len : size;
+    
+    size_t bytes_read = dr->read(dr, bufinfo.buf, size);
+    return mp_obj_new_int((int)bytes_read);
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_datareader_read_obj, ncnn_mp_datareader_read);
 
 // ------------------
 /* modelbin api */
@@ -1036,6 +1092,46 @@ static mp_obj_t ncnn_mp_modelbin_destroy(mp_obj_t mb_obj) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_modelbin_destroy_obj, ncnn_mp_modelbin_destroy);
 
+// ------------------
+/* modelbin function pointer api */
+// ------------------
+// c_api: ncnn_mat_t (*load_1d)(const ncnn_modelbin_t mb, int w, int type);
+// Python: ncnn_mp.modelbin_load_1d(mb_handle, w, type) -> int (mat_handle)
+static mp_obj_t ncnn_mp_modelbin_load_1d(mp_obj_t mb_obj, mp_obj_t w_obj, mp_obj_t type_obj) {
+    ncnn_modelbin_t mb = (ncnn_modelbin_t)mp_obj_get_int(mb_obj);
+    int w = mp_obj_get_int(w_obj);
+    int type = mp_obj_get_int(type_obj);
+    ncnn_mat_t mat = mb->load_1d(mb, w, type);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_modelbin_load_1d_obj, ncnn_mp_modelbin_load_1d);
+
+// c_api: ncnn_mat_t (*load_2d)(const ncnn_modelbin_t mb, int w, int h, int type);
+// Python: ncnn_mp.modelbin_load_2d(mb_handle, w, h, type) -> int (mat_handle)
+static mp_obj_t ncnn_mp_modelbin_load_2d(size_t n_args, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, 0, 4, 4, false);
+    ncnn_modelbin_t mb = (ncnn_modelbin_t)mp_obj_get_int(args[0]);
+    int w = mp_obj_get_int(args[1]);
+    int h = mp_obj_get_int(args[2]);
+    int type = mp_obj_get_int(args[3]);
+    ncnn_mat_t mat = mb->load_2d(mb, w, h, type);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_modelbin_load_2d_obj, 4, 4, ncnn_mp_modelbin_load_2d);
+
+// c_api: ncnn_mat_t (*load_3d)(const ncnn_modelbin_t mb, int w, int h, int c, int type);
+// Python: ncnn_mp.modelbin_load_3d(mb_handle, w, h, c, type) -> int (mat_handle)
+static mp_obj_t ncnn_mp_modelbin_load_3d(size_t n_args, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, 0, 5, 5, false);
+    ncnn_modelbin_t mb = (ncnn_modelbin_t)mp_obj_get_int(args[0]);
+    int w = mp_obj_get_int(args[1]);
+    int h = mp_obj_get_int(args[2]);
+    int c = mp_obj_get_int(args[3]);
+    int type = mp_obj_get_int(args[4]);
+    ncnn_mat_t mat = mb->load_3d(mb, w, h, c, type);
+    return mp_obj_new_int_from_ull((uintptr_t)mat);
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_modelbin_load_3d_obj, 5, 5, ncnn_mp_modelbin_load_3d);
 
 // ------------------
 /* layer api */
@@ -1312,6 +1408,126 @@ static mp_obj_t ncnn_mp_blob_get_top_shape(mp_obj_t layer_obj, mp_obj_t i_obj) {
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_blob_get_top_shape_obj, ncnn_mp_blob_get_top_shape);
 
 // ------------------
+/* layer function pointer api */
+// ------------------
+// c_api: int (*load_param)(ncnn_layer_t layer, const ncnn_paramdict_t pd);
+// Python: ncnn_mp.layer_load_param(layer_handle, pd_handle) -> int
+static mp_obj_t ncnn_mp_layer_load_param(mp_obj_t layer_obj, mp_obj_t pd_obj) {
+    ncnn_layer_t layer = (ncnn_layer_t)mp_obj_get_int(layer_obj);
+    ncnn_paramdict_t pd = (ncnn_paramdict_t)mp_obj_get_int(pd_obj);
+    int result = layer->load_param(layer, pd);
+    return mp_obj_new_int(result);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_layer_load_param_obj, ncnn_mp_layer_load_param);
+
+// c_api: int (*load_model)(ncnn_layer_t layer, const ncnn_modelbin_t mb);
+// Python: ncnn_mp.layer_load_model(layer_handle, mb_handle) -> int
+static mp_obj_t ncnn_mp_layer_load_model(mp_obj_t layer_obj, mp_obj_t mb_obj) {
+    ncnn_layer_t layer = (ncnn_layer_t)mp_obj_get_int(layer_obj);
+    ncnn_modelbin_t mb = (ncnn_modelbin_t)mp_obj_get_int(mb_obj);
+    int result = layer->load_model(layer, mb);
+    return mp_obj_new_int(result);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_layer_load_model_obj, ncnn_mp_layer_load_model);
+
+// c_api: int (*create_pipeline)(ncnn_layer_t layer, const ncnn_option_t opt);
+// Python: ncnn_mp.layer_create_pipeline(layer_handle, opt_handle) -> int
+static mp_obj_t ncnn_mp_layer_create_pipeline(mp_obj_t layer_obj, mp_obj_t opt_obj) {
+    ncnn_layer_t layer = (ncnn_layer_t)mp_obj_get_int(layer_obj);
+    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(opt_obj);
+    int result = layer->create_pipeline(layer, opt);
+    return mp_obj_new_int(result);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_layer_create_pipeline_obj, ncnn_mp_layer_create_pipeline);
+
+// c_api: int (*destroy_pipeline)(ncnn_layer_t layer, const ncnn_option_t opt);
+// Python: ncnn_mp.layer_destroy_pipeline(layer_handle, opt_handle) -> int
+static mp_obj_t ncnn_mp_layer_destroy_pipeline(mp_obj_t layer_obj, mp_obj_t opt_obj) {
+    ncnn_layer_t layer = (ncnn_layer_t)mp_obj_get_int(layer_obj);
+    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(opt_obj);
+    int result = layer->destroy_pipeline(layer, opt);
+    return mp_obj_new_int(result);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_layer_destroy_pipeline_obj, ncnn_mp_layer_destroy_pipeline);
+
+// c_api: int (*forward_1)(const ncnn_layer_t layer, const ncnn_mat_t bottom_blob, ncnn_mat_t* top_blob, const ncnn_option_t opt);
+// Python: ncnn_mp.layer_forward_1(layer_handle, bottom_mat_handle, opt_handle) -> int (top_mat_handle)
+static mp_obj_t ncnn_mp_layer_forward_1(mp_obj_t layer_obj, mp_obj_t bottom_obj, mp_obj_t opt_obj) {
+    ncnn_layer_t layer = (ncnn_layer_t)mp_obj_get_int(layer_obj);
+    ncnn_mat_t bottom_blob = (ncnn_mat_t)mp_obj_get_int(bottom_obj);
+    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(opt_obj);
+    ncnn_mat_t top_blob = 0;  // init to nullptr
+    int result = layer->forward_1(layer, bottom_blob, &top_blob, opt);
+    return mp_obj_new_int_from_ull((uintptr_t)top_blob);
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_layer_forward_1_obj, ncnn_mp_layer_forward_1);
+
+// c_api: int (*forward_n)(const ncnn_layer_t layer, const ncnn_mat_t* bottom_blobs, int n, ncnn_mat_t* top_blobs, int n2, const ncnn_option_t opt);
+// Python: ncnn_mp.layer_forward_n(layer_handle, bottom_blobs_tuple, num_outputs, opt_handle) -> tuple
+static mp_obj_t ncnn_mp_layer_forward_n(size_t n_args, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, 0, 4, 4, false);
+    ncnn_layer_t layer = (ncnn_layer_t)mp_obj_get_int(args[0]);
+    mp_obj_t bottom_blobs_obj = args[1];
+    int n2 = mp_obj_get_int(args[2]);
+    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(args[3]);
+
+    size_t n;
+    mp_obj_t *bottom_items;
+    mp_obj_get_array(bottom_blobs_obj, &n, &bottom_items);
+
+    ncnn_mat_t* bottom_blobs = m_new(ncnn_mat_t, n);
+    for (int i = 0; i < n; i++) {
+        bottom_blobs[i] = (ncnn_mat_t)mp_obj_get_int(bottom_items[i]);
+    }
+    ncnn_mat_t* top_blobs = m_new(ncnn_mat_t, n2);
+
+    layer->forward_n(layer, bottom_blobs, n, top_blobs, n2, opt);
+
+    mp_obj_t* top_items = (mp_obj_t*)m_new(mp_obj_t, n2);
+    for (int i = 0; i < n2; i++) {
+        top_items[i] = mp_obj_new_int_from_ull((uintptr_t)top_blobs[i]);
+    }
+    mp_obj_t result_tuple = mp_obj_new_tuple(n2, top_items);
+
+    m_del(ncnn_mat_t, bottom_blobs, n);
+    m_del(ncnn_mat_t, top_blobs, n2);
+    m_del(mp_obj_t, top_items, n2);
+    return result_tuple;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_layer_forward_n_obj, 4, 4, ncnn_mp_layer_forward_n);
+
+// c_api: int (*forward_inplace_1)(const ncnn_layer_t layer, ncnn_mat_t bottom_top_blob, const ncnn_option_t opt);
+// Python: ncnn_mp.layer_forward_inplace_1(layer_handle, bottom_top_mat_handle, opt_handle) -> int
+static mp_obj_t ncnn_mp_layer_forward_inplace_1(mp_obj_t layer_obj, mp_obj_t bottom_top_obj, mp_obj_t opt_obj) {
+    ncnn_layer_t layer = (ncnn_layer_t)mp_obj_get_int(layer_obj);
+    ncnn_mat_t bottom_top_blob = (ncnn_mat_t)mp_obj_get_int(bottom_top_obj);
+    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(opt_obj);
+    int result = layer->forward_inplace_1(layer, bottom_top_blob, opt);
+    return mp_obj_new_int(result);
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_layer_forward_inplace_1_obj, ncnn_mp_layer_forward_inplace_1);
+
+// c_api: int (*forward_inplace_n)(const ncnn_layer_t layer, ncnn_mat_t* bottom_top_blobs, int n, const ncnn_option_t opt);
+// Python: ncnn_mp.layer_forward_inplace_n(layer_handle, bottom_top_mats_list, opt_handle) -> int
+static mp_obj_t ncnn_mp_layer_forward_inplace_n(mp_obj_t layer_obj, mp_obj_t bottom_top_list_obj, mp_obj_t opt_obj) {
+    ncnn_layer_t layer = (ncnn_layer_t)mp_obj_get_int(layer_obj);
+    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(opt_obj);
+
+    mp_obj_t *items;
+    size_t n;
+    mp_obj_get_array(bottom_top_list_obj, &n, &items);
+    ncnn_mat_t* bottom_top_blobs = m_new(ncnn_mat_t, n);
+    for (size_t i = 0; i < n; i++) {
+        bottom_top_blobs[i] = (ncnn_mat_t)mp_obj_get_int(items[i]);
+    }
+    int result = layer->forward_inplace_n(layer, bottom_top_blobs, n, opt);
+    m_del(ncnn_mat_t, bottom_top_blobs, n);
+    
+    return mp_obj_new_int(result);
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_layer_forward_inplace_n_obj, ncnn_mp_layer_forward_inplace_n);
+
+// ------------------
 /* net api */
 // ------------------
 // c_api:  ncnn_net_t ncnn_net_create(void);
@@ -1350,9 +1566,9 @@ static mp_obj_t ncnn_mp_net_set_option(mp_obj_t net_obj, mp_obj_t opt_obj) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_net_set_option_obj, ncnn_mp_net_set_option);
 
-#if NCNN_VULKAN
 // c_api:  void ncnn_net_set_vulkan_device(ncnn_net_t net, int device_index);
 // Python: ncnn_mp.net_set_vulkan_device(net_handle, device_index) -> None
+#if NCNN_VULKAN
 static mp_obj_t ncnn_mp_net_set_vulkan_device(mp_obj_t net_obj, mp_obj_t device_index_obj) {
     ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(net_obj);
     int device_index = mp_obj_get_int(device_index_obj);
@@ -1362,13 +1578,40 @@ static mp_obj_t ncnn_mp_net_set_vulkan_device(mp_obj_t net_obj, mp_obj_t device_
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_net_set_vulkan_device_obj, ncnn_mp_net_set_vulkan_device);
 #endif // NCNN_VULKAN
 
-// TODO: ncnn_net_register_custom_layer_by_type
-// TODO: ncnn_net_register_custom_layer_by_typeindex
+// c_api: void ncnn_net_register_custom_layer_by_type(ncnn_net_t net, const char* type, ncnn_layer_creator_t creator, ncnn_layer_destroyer_t destroyer, void* userdata);
+// Python: ncnn_mp.net_register_custom_layer_by_type(net, type, creator, destroyer, userdata)
+#if NCNN_STRING
+static mp_obj_t ncnn_mp_net_register_custom_layer_by_type(size_t n_args, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, 0, 5, 5, false);
+    ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(args[0]);
+    const char* type = mp_obj_str_get_str(args[1]);
+    ncnn_layer_creator_t creator = (ncnn_layer_creator_t)mp_obj_get_int(args[2]);
+    ncnn_layer_destroyer_t destroyer = (ncnn_layer_destroyer_t)mp_obj_get_int(args[3]);
+    void* userdata = (void*)mp_obj_get_int(args[4]);
+    ncnn_net_register_custom_layer_by_type(net, type, creator, destroyer, userdata);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_net_register_custom_layer_by_type_obj, 5, 5, ncnn_mp_net_register_custom_layer_by_type);
+#endif /* NCNN_STRING */
+
+// c_api: void ncnn_net_register_custom_layer_by_typeindex(ncnn_net_t net, int typeindex, ncnn_layer_creator_t creator, ncnn_layer_destroyer_t destroyer, void* userdata);
+// Python: ncnn_mp.net_register_custom_layer_by_typeindex(net, typeindex, creator, destroyer, userdata)
+static mp_obj_t ncnn_mp_net_register_custom_layer_by_typeindex(size_t n_args, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, 0, 5, 5, false);
+    ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(args[0]);
+    int typeindex = mp_obj_get_int(args[1]);
+    ncnn_layer_creator_t creator = (ncnn_layer_creator_t)mp_obj_get_int(args[2]);
+    ncnn_layer_destroyer_t destroyer = (ncnn_layer_destroyer_t)mp_obj_get_int(args[3]);
+    void* userdata = (void*)mp_obj_get_int(args[4]);
+    ncnn_net_register_custom_layer_by_typeindex(net, typeindex, creator, destroyer, userdata);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_net_register_custom_layer_by_typeindex_obj, 5, 5, ncnn_mp_net_register_custom_layer_by_typeindex);
 
 #if NCNN_STDIO
-#if NCNN_STRING
 // c_api:  int ncnn_net_load_param(ncnn_net_t net, const char* path);
 // Python: ncnn_mp.net_load_param(net_handle, path) -> int
+#if NCNN_STRING
 static mp_obj_t ncnn_mp_net_load_param(mp_obj_t net_obj, mp_obj_t path_obj) {
     ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(net_obj);
     const char* path = mp_obj_str_get_str(path_obj);
@@ -1399,21 +1642,14 @@ static mp_obj_t ncnn_mp_net_load_model(mp_obj_t net_obj, mp_obj_t path_obj) {
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_net_load_model_obj, ncnn_mp_net_load_model);
 #endif // NCNN_STDIO
 
-#if NCNN_STDIO
-#if NCNN_STRING
 // c_api:  int ncnn_net_load_param_memory(ncnn_net_t net, const char* mem);
 // Python: ncnn_mp.net_load_param_memory(net_handle, mem_str) -> int
+#if NCNN_STDIO
+#if NCNN_STRING
 static mp_obj_t ncnn_mp_net_load_param_memory(mp_obj_t net_obj, mp_obj_t mem_obj) {
     ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(net_obj);
-    // if (!net) {
-    //     mp_raise_ValueError(MP_ERROR_TEXT("The provided net handle is NULL or invalid."));
-    // }
     const char* mem = mp_obj_str_get_str(mem_obj);
-    // mp_printf(MP_PYTHON_PRINTER, "[DEBUG] ncnn_mp_net_load_param_memory called.\n");
-    // mp_printf(MP_PYTHON_PRINTER, "[DEBUG]   - net handle (pointer): %p\n", net);
-    // mp_printf(MP_PYTHON_PRINTER, "[DEBUG]   - mem content: \n--BEGIN--\n%s\n--END--\n", mem);
     int result = ncnn_net_load_param_memory(net, mem);
-    // mp_printf(MP_PYTHON_PRINTER, "[DEBUG] ncnn_net_load_param_memory returned: %d\n", result);
     return mp_obj_new_int(result);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_net_load_param_memory_obj, ncnn_mp_net_load_param_memory);
@@ -2014,6 +2250,8 @@ static const mp_rom_map_elem_t ncnn_mp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_allocator_create_pool_allocator), MP_ROM_PTR(&ncnn_mp_allocator_create_pool_allocator_obj) },
     { MP_ROM_QSTR(MP_QSTR_allocator_create_unlocked_pool), MP_ROM_PTR(&ncnn_mp_allocator_create_unlocked_pool_obj) },
     { MP_ROM_QSTR(MP_QSTR_allocator_destroy), MP_ROM_PTR(&ncnn_mp_allocator_destroy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_allocator_fast_malloc), MP_ROM_PTR(&ncnn_mp_allocator_fast_malloc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_allocator_fast_free), MP_ROM_PTR(&ncnn_mp_allocator_fast_free_obj) },
     { MP_ROM_QSTR(MP_QSTR_option_create), MP_ROM_PTR(&ncnn_mp_option_create_obj) },
     { MP_ROM_QSTR(MP_QSTR_option_destroy), MP_ROM_PTR(&ncnn_mp_option_destroy_obj) },
     { MP_ROM_QSTR(MP_QSTR_option_get_num_threads), MP_ROM_PTR(&ncnn_mp_option_get_num_threads_obj) },
@@ -2058,16 +2296,20 @@ static const mp_rom_map_elem_t ncnn_mp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mat_get_cstep), MP_ROM_PTR(&ncnn_mp_mat_get_cstep_obj) },
     { MP_ROM_QSTR(MP_QSTR_mat_get_data_ptr), MP_ROM_PTR(&ncnn_mp_mat_get_data_ptr_obj) },
     { MP_ROM_QSTR(MP_QSTR_mat_get_channel_data), MP_ROM_PTR(&ncnn_mp_mat_get_channel_data_obj) },
+#if NCNN_PIXEL
     { MP_ROM_QSTR(MP_QSTR_mat_from_pixels), MP_ROM_PTR(&ncnn_mp_mat_from_pixels_obj) },
     { MP_ROM_QSTR(MP_QSTR_mat_from_pixels_resize), MP_ROM_PTR(&ncnn_mp_mat_from_pixels_resize_obj) },
     { MP_ROM_QSTR(MP_QSTR_mat_from_pixels_roi), MP_ROM_PTR(&ncnn_mp_mat_from_pixels_roi_obj) },
     { MP_ROM_QSTR(MP_QSTR_mat_from_pixels_roi_resize), MP_ROM_PTR(&ncnn_mp_mat_from_pixels_roi_resize_obj) },
     { MP_ROM_QSTR(MP_QSTR_mat_to_pixels), MP_ROM_PTR(&ncnn_mp_mat_to_pixels_obj) },
     { MP_ROM_QSTR(MP_QSTR_mat_to_pixels_resize), MP_ROM_PTR(&ncnn_mp_mat_to_pixels_resize_obj) },
+#endif /* NCNN_PIXEL */
     { MP_ROM_QSTR(MP_QSTR_mat_substract_mean_normalize), MP_ROM_PTR(&ncnn_mp_mat_substract_mean_normalize_obj) },
     { MP_ROM_QSTR(MP_QSTR_convert_packing), MP_ROM_PTR(&ncnn_mp_convert_packing_obj) },
     { MP_ROM_QSTR(MP_QSTR_flatten), MP_ROM_PTR(&ncnn_mp_flatten_obj) },
+#if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_blob_get_name), MP_ROM_PTR(&ncnn_mp_blob_get_name_obj) },
+#endif // NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_blob_get_producer), MP_ROM_PTR(&ncnn_mp_blob_get_producer_obj) },
     { MP_ROM_QSTR(MP_QSTR_blob_get_consumer), MP_ROM_PTR(&ncnn_mp_blob_get_consumer_obj) },
     { MP_ROM_QSTR(MP_QSTR_blob_get_shape), MP_ROM_PTR(&ncnn_mp_blob_get_shape_obj) },
@@ -2081,19 +2323,35 @@ static const mp_rom_map_elem_t ncnn_mp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_paramdict_set_float), MP_ROM_PTR(&ncnn_mp_paramdict_set_float_obj) },
     { MP_ROM_QSTR(MP_QSTR_paramdict_set_array), MP_ROM_PTR(&ncnn_mp_paramdict_set_array_obj) },
     { MP_ROM_QSTR(MP_QSTR_datareader_create), MP_ROM_PTR(&ncnn_mp_datareader_create_obj) },
+#if NCNN_STDIO
+    { MP_ROM_QSTR(MP_QSTR_datareader_create_from_stdio), MP_ROM_PTR(&ncnn_mp_datareader_create_from_stdio_obj) },
+#endif /* NCNN_STDIO */
     { MP_ROM_QSTR(MP_QSTR_datareader_create_from_memory), MP_ROM_PTR(&ncnn_mp_datareader_create_from_memory_obj) },
     { MP_ROM_QSTR(MP_QSTR_datareader_destroy), MP_ROM_PTR(&ncnn_mp_datareader_destroy_obj) },
+#if NCNN_STRING
+    { MP_ROM_QSTR(MP_QSTR_datareader_scan), MP_ROM_PTR(&ncnn_mp_datareader_scan_obj) },
+#endif /* NCNN_STRING */
+    { MP_ROM_QSTR(MP_QSTR_datareader_read), MP_ROM_PTR(&ncnn_mp_datareader_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_modelbin_create_from_datareader), MP_ROM_PTR(&ncnn_mp_modelbin_create_from_datareader_obj) },
     { MP_ROM_QSTR(MP_QSTR_modelbin_create_from_mat_array), MP_ROM_PTR(&ncnn_mp_modelbin_create_from_mat_array_obj) },
     { MP_ROM_QSTR(MP_QSTR_modelbin_destroy), MP_ROM_PTR(&ncnn_mp_modelbin_destroy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_modelbin_load_1d), MP_ROM_PTR(&ncnn_mp_modelbin_load_1d_obj) },
+    { MP_ROM_QSTR(MP_QSTR_modelbin_load_2d), MP_ROM_PTR(&ncnn_mp_modelbin_load_2d_obj) },
+    { MP_ROM_QSTR(MP_QSTR_modelbin_load_3d), MP_ROM_PTR(&ncnn_mp_modelbin_load_3d_obj) },
     { MP_ROM_QSTR(MP_QSTR_layer_create), MP_ROM_PTR(&ncnn_mp_layer_create_obj) },
     { MP_ROM_QSTR(MP_QSTR_layer_create_by_typeindex), MP_ROM_PTR(&ncnn_mp_layer_create_by_typeindex_obj) },
+#if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_layer_create_by_type), MP_ROM_PTR(&ncnn_mp_layer_create_by_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_layer_type_to_index), MP_ROM_PTR(&ncnn_mp_layer_type_to_index_obj) },
+#endif // NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_layer_destroy), MP_ROM_PTR(&ncnn_mp_layer_destroy_obj) },
+#if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_layer_get_name), MP_ROM_PTR(&ncnn_mp_layer_get_name_obj) },
+#endif // NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_layer_get_typeindex), MP_ROM_PTR(&ncnn_mp_layer_get_typeindex_obj) },
+#if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_layer_get_type), MP_ROM_PTR(&ncnn_mp_layer_get_type_obj) },
+#endif // NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_layer_get_one_blob_only), MP_ROM_PTR(&ncnn_mp_layer_get_one_blob_only_obj) },
     { MP_ROM_QSTR(MP_QSTR_layer_get_support_inplace), MP_ROM_PTR(&ncnn_mp_layer_get_support_inplace_obj) },
     { MP_ROM_QSTR(MP_QSTR_layer_get_support_vulkan), MP_ROM_PTR(&ncnn_mp_layer_get_support_vulkan_obj) },
@@ -2112,38 +2370,67 @@ static const mp_rom_map_elem_t ncnn_mp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_layer_get_top), MP_ROM_PTR(&ncnn_mp_layer_get_top_obj) },
     { MP_ROM_QSTR(MP_QSTR_blob_get_bottom_shape), MP_ROM_PTR(&ncnn_mp_blob_get_bottom_shape_obj) },
     { MP_ROM_QSTR(MP_QSTR_blob_get_top_shape), MP_ROM_PTR(&ncnn_mp_blob_get_top_shape_obj) },
+    { MP_ROM_QSTR(MP_QSTR_layer_load_param), MP_ROM_PTR(&ncnn_mp_layer_load_param_obj) },
+    { MP_ROM_QSTR(MP_QSTR_layer_load_model), MP_ROM_PTR(&ncnn_mp_layer_load_model_obj) },
+    { MP_ROM_QSTR(MP_QSTR_layer_create_pipeline), MP_ROM_PTR(&ncnn_mp_layer_create_pipeline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_layer_destroy_pipeline), MP_ROM_PTR(&ncnn_mp_layer_destroy_pipeline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_layer_forward_1), MP_ROM_PTR(&ncnn_mp_layer_forward_1_obj) },
+    { MP_ROM_QSTR(MP_QSTR_layer_forward_n), MP_ROM_PTR(&ncnn_mp_layer_forward_n_obj) },
+    { MP_ROM_QSTR(MP_QSTR_layer_forward_inplace_1), MP_ROM_PTR(&ncnn_mp_layer_forward_inplace_1_obj) },
+    { MP_ROM_QSTR(MP_QSTR_layer_forward_inplace_n), MP_ROM_PTR(&ncnn_mp_layer_forward_inplace_n_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_create), MP_ROM_PTR(&ncnn_mp_net_create_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_destroy), MP_ROM_PTR(&ncnn_mp_net_destroy_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_get_option), MP_ROM_PTR(&ncnn_mp_net_get_option_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_set_option), MP_ROM_PTR(&ncnn_mp_net_set_option_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_net_set_vulkan_device), MP_ROM_PTR(&ncnn_mp_net_set_vulkan_device_obj) },
+#if NCNN_VULKAN
+    { MP_ROM_QSTR(MP_QSTR_net_set_vulkan_device), MP_ROM_PTR(&ncnn_mp_net_set_vulkan_device_obj) },
+#endif // NCNN_VULKAN
+#if NCNN_STRING
+    { MP_ROM_QSTR(MP_QSTR_net_register_custom_layer_by_type), MP_ROM_PTR(&ncnn_mp_net_register_custom_layer_by_type_obj) },
+#endif /* NCNN_STRING */
+    { MP_ROM_QSTR(MP_QSTR_net_register_custom_layer_by_typeindex), MP_ROM_PTR(&ncnn_mp_net_register_custom_layer_by_typeindex_obj) },
+#if NCNN_STDIO
+#if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_net_load_param), MP_ROM_PTR(&ncnn_mp_net_load_param_obj) },
+#endif // NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_net_load_param_bin), MP_ROM_PTR(&ncnn_mp_net_load_param_bin_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_load_model), MP_ROM_PTR(&ncnn_mp_net_load_model_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_load_param_memory), MP_ROM_PTR(&ncnn_mp_net_load_param_memory_obj) },
+#endif // NCNN_STDIO
+#if NCNN_STDIO
+#if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_net_load_param_bin_memory), MP_ROM_PTR(&ncnn_mp_net_load_param_bin_memory_obj) },
+#endif // NCNN_STRING
+#endif // NCNN_STDIO
     { MP_ROM_QSTR(MP_QSTR_net_load_model_memory), MP_ROM_PTR(&ncnn_mp_net_load_model_memory_obj) },
+#if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_net_load_param_datareader), MP_ROM_PTR(&ncnn_mp_net_load_param_datareader_obj) },
+#endif // NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_net_load_param_bin_datareader), MP_ROM_PTR(&ncnn_mp_net_load_param_bin_datareader_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_load_model_datareader), MP_ROM_PTR(&ncnn_mp_net_load_model_datareader_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_clear), MP_ROM_PTR(&ncnn_mp_net_clear_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_get_input_count), MP_ROM_PTR(&ncnn_mp_net_get_input_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_get_output_count), MP_ROM_PTR(&ncnn_mp_net_get_output_count_obj) },
+#if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_net_get_input_name), MP_ROM_PTR(&ncnn_mp_net_get_input_name_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_get_output_name), MP_ROM_PTR(&ncnn_mp_net_get_output_name_obj) },
+#endif // NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_net_get_input_index), MP_ROM_PTR(&ncnn_mp_net_get_input_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_get_output_index), MP_ROM_PTR(&ncnn_mp_net_get_output_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_extractor_create), MP_ROM_PTR(&ncnn_mp_extractor_create_obj) },
     { MP_ROM_QSTR(MP_QSTR_extractor_destroy), MP_ROM_PTR(&ncnn_mp_extractor_destroy_obj) },
     { MP_ROM_QSTR(MP_QSTR_extractor_set_option), MP_ROM_PTR(&ncnn_mp_extractor_set_option_obj) },
+#if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_extractor_input), MP_ROM_PTR(&ncnn_mp_extractor_input_obj) },
     { MP_ROM_QSTR(MP_QSTR_extractor_extract), MP_ROM_PTR(&ncnn_mp_extractor_extract_obj) },
+#endif // NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_extractor_input_index), MP_ROM_PTR(&ncnn_mp_extractor_input_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_extractor_extract_index), MP_ROM_PTR(&ncnn_mp_extractor_extract_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_copy_make_border), MP_ROM_PTR(&ncnn_mp_copy_make_border_obj) },
     { MP_ROM_QSTR(MP_QSTR_copy_make_border_3d), MP_ROM_PTR(&ncnn_mp_copy_make_border_3d_obj) },
     { MP_ROM_QSTR(MP_QSTR_copy_cut_border), MP_ROM_PTR(&ncnn_mp_copy_cut_border_obj) },
     { MP_ROM_QSTR(MP_QSTR_copy_cut_border_3d), MP_ROM_PTR(&ncnn_mp_copy_cut_border_3d_obj) },
+#if NCNN_PIXEL_DRAWING
     { MP_ROM_QSTR(MP_QSTR_draw_rectangle_c1), MP_ROM_PTR(&ncnn_mp_draw_rectangle_c1_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_rectangle_c2), MP_ROM_PTR(&ncnn_mp_draw_rectangle_c2_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_rectangle_c3), MP_ROM_PTR(&ncnn_mp_draw_rectangle_c3_obj) },
@@ -2160,6 +2447,7 @@ static const mp_rom_map_elem_t ncnn_mp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_draw_line_c2), MP_ROM_PTR(&ncnn_mp_draw_line_c2_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line_c3), MP_ROM_PTR(&ncnn_mp_draw_line_c3_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line_c4), MP_ROM_PTR(&ncnn_mp_draw_line_c4_obj) },
+#endif // NCNN_PIXEL_DRAWING
 };
 static MP_DEFINE_CONST_DICT(ncnn_mp_module_globals, ncnn_mp_module_globals_table);
 
