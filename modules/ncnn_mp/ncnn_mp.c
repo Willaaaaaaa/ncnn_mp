@@ -1,7 +1,6 @@
 #include "py/runtime.h"
 #include "py/obj.h"
 #include "c_api.h"
-// #include <string.h>
 
 // c_api:  const char* ncnn_version(void);
 // Python: ncnn_mp.version() -> str
@@ -1406,8 +1405,15 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_net_load_model_obj, ncnn_mp_net_load_mo
 // Python: ncnn_mp.net_load_param_memory(net_handle, mem_str) -> int
 static mp_obj_t ncnn_mp_net_load_param_memory(mp_obj_t net_obj, mp_obj_t mem_obj) {
     ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(net_obj);
+    // if (!net) {
+    //     mp_raise_ValueError(MP_ERROR_TEXT("The provided net handle is NULL or invalid."));
+    // }
     const char* mem = mp_obj_str_get_str(mem_obj);
+    // mp_printf(MP_PYTHON_PRINTER, "[DEBUG] ncnn_mp_net_load_param_memory called.\n");
+    // mp_printf(MP_PYTHON_PRINTER, "[DEBUG]   - net handle (pointer): %p\n", net);
+    // mp_printf(MP_PYTHON_PRINTER, "[DEBUG]   - mem content: \n--BEGIN--\n%s\n--END--\n", mem);
     int result = ncnn_net_load_param_memory(net, mem);
+    // mp_printf(MP_PYTHON_PRINTER, "[DEBUG] ncnn_net_load_param_memory returned: %d\n", result);
     return mp_obj_new_int(result);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_net_load_param_memory_obj, ncnn_mp_net_load_param_memory);
