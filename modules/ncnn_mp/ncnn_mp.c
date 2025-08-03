@@ -1457,7 +1457,7 @@ static mp_obj_t ncnn_mp_layer_forward_1(mp_obj_t layer_obj, mp_obj_t bottom_obj,
     ncnn_mat_t bottom_blob = (ncnn_mat_t)mp_obj_get_int(bottom_obj);
     ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(opt_obj);
     ncnn_mat_t top_blob = 0;  // init to nullptr
-    int result = layer->forward_1(layer, bottom_blob, &top_blob, opt);
+    layer->forward_1(layer, bottom_blob, &top_blob, opt);
     return mp_obj_new_int_from_ull((uintptr_t)top_blob);
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_layer_forward_1_obj, ncnn_mp_layer_forward_1);
@@ -1476,7 +1476,7 @@ static mp_obj_t ncnn_mp_layer_forward_n(size_t n_args, const mp_obj_t *args) {
     mp_obj_get_array(bottom_blobs_obj, &n, &bottom_items);
 
     ncnn_mat_t* bottom_blobs = m_new(ncnn_mat_t, n);
-    for (int i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         bottom_blobs[i] = (ncnn_mat_t)mp_obj_get_int(bottom_items[i]);
     }
     ncnn_mat_t* top_blobs = m_new(ncnn_mat_t, n2);
