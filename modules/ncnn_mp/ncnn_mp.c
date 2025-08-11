@@ -120,24 +120,24 @@ static mp_obj_t ncnn_mp_option_set_use_local_pool_allocator(mp_obj_t opt_obj, mp
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_option_set_use_local_pool_allocator_obj, ncnn_mp_option_set_use_local_pool_allocator);
 
 // c_api:  void ncnn_option_set_blob_allocator(ncnn_option_t opt, ncnn_allocator_t allocator);
-// Python: ncnn_mp.option_set_blob_allocator(opt_handle, allocator_handle)
-static mp_obj_t ncnn_mp_option_set_blob_allocator(mp_obj_t opt_obj, mp_obj_t allocator_obj) {
-    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(opt_obj);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
+// Python: ncnn_mp.option_set_blob_allocator(opt_handle, [allocator_handle])
+static mp_obj_t ncnn_mp_option_set_blob_allocator(size_t n_args, const mp_obj_t *args) {
+    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(args[0]);
+    ncnn_allocator_t allocator = n_args == 2 ? (ncnn_allocator_t)mp_obj_get_int(args[1]) : NULL;
     ncnn_option_set_blob_allocator(opt, allocator);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_option_set_blob_allocator_obj, ncnn_mp_option_set_blob_allocator);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_option_set_blob_allocator_obj, 1, 2, ncnn_mp_option_set_blob_allocator);
 
 // c_api:  void ncnn_option_set_workspace_allocator(ncnn_option_t opt, ncnn_allocator_t allocator);
-// Python: ncnn_mp.option_set_workspace_allocator(opt_handle, allocator_handle)
-static mp_obj_t ncnn_mp_option_set_workspace_allocator(mp_obj_t opt_obj, mp_obj_t allocator_obj) {
-    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(opt_obj);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
+// Python: ncnn_mp.option_set_workspace_allocator(opt_handle, [allocator_handle])
+static mp_obj_t ncnn_mp_option_set_workspace_allocator(size_t n_args, const mp_obj_t *args) {
+    ncnn_option_t opt = (ncnn_option_t)mp_obj_get_int(args[0]);
+    ncnn_allocator_t allocator = n_args == 2 ? (ncnn_allocator_t)mp_obj_get_int(args[1]) : NULL;
     ncnn_option_set_workspace_allocator(opt, allocator);
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_option_set_workspace_allocator_obj, ncnn_mp_option_set_workspace_allocator);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_option_set_workspace_allocator_obj, 1, 2, ncnn_mp_option_set_workspace_allocator);
 
 // c_api:  int ncnn_option_get_use_vulkan_compute(const ncnn_option_t opt);
 // Python: ncnn_mp.option_get_use_vulkan_compute(opt_handle) -> int
@@ -172,244 +172,232 @@ static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_mat_create_obj, ncnn_mp_mat_create);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_1d(int w, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_1d(w, allocator) -> int (handle)
-static mp_obj_t ncnn_mp_mat_create_1d(mp_obj_t w_obj, mp_obj_t allocator_obj) {
-    int w = mp_obj_get_int(w_obj);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
+static mp_obj_t ncnn_mp_mat_create_1d(size_t n_args, const mp_obj_t *args) {
+    int w = mp_obj_get_int(args[0]);
+    ncnn_allocator_t allocator = n_args == 2 ? (ncnn_allocator_t)mp_obj_get_int(args[1]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_1d(w, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_mat_create_1d_obj, ncnn_mp_mat_create_1d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_1d_obj, 1, 2, ncnn_mp_mat_create_1d);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_2d(int w, int h, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_2d(w, h, allocator) -> int (handle)
-static mp_obj_t ncnn_mp_mat_create_2d(mp_obj_t w_obj, mp_obj_t h_obj, mp_obj_t allocator_obj) {
-    int w = mp_obj_get_int(w_obj);
-    int h = mp_obj_get_int(h_obj);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
+static mp_obj_t ncnn_mp_mat_create_2d(size_t n_args, const mp_obj_t *args) {
+    int w = mp_obj_get_int(args[0]);
+    int h = mp_obj_get_int(args[1]);
+    ncnn_allocator_t allocator = n_args == 3 ? (ncnn_allocator_t)mp_obj_get_int(args[2]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_2d(w, h, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_mat_create_2d_obj, ncnn_mp_mat_create_2d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_2d_obj, 2, 3, ncnn_mp_mat_create_2d);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_3d(int w, int h, int c, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_3d(w, h, c, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_3d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 4, 4, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     int c = mp_obj_get_int(args[2]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[3]);
+    ncnn_allocator_t allocator = n_args == 4 ? (ncnn_allocator_t)mp_obj_get_int(args[3]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_3d(w, h, c, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_3d_obj, 4, 4, ncnn_mp_mat_create_3d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_3d_obj, 3, 4, ncnn_mp_mat_create_3d);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_4d(int w, int h, int d, int c, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_4d(w, h, d, c, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_4d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 5, 5, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     int d = mp_obj_get_int(args[2]);
     int c = mp_obj_get_int(args[3]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[4]);
+    ncnn_allocator_t allocator = n_args == 5 ? (ncnn_allocator_t)mp_obj_get_int(args[4]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_4d(w, h, d, c, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_4d_obj, 5, 5, ncnn_mp_mat_create_4d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_4d_obj, 4, 5, ncnn_mp_mat_create_4d);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_external_1d(int w, void* data, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_external_1d(w, data, allocator) -> int (handle)
-static mp_obj_t ncnn_mp_mat_create_external_1d(mp_obj_t w_obj, mp_obj_t data_obj, mp_obj_t allocator_obj) {
-    int w = mp_obj_get_int(w_obj);
+static mp_obj_t ncnn_mp_mat_create_external_1d(size_t n_args, const mp_obj_t *args) {
+    int w = mp_obj_get_int(args[0]);
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_READ);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    ncnn_allocator_t allocator = n_args == 3 ? (ncnn_allocator_t)mp_obj_get_int(args[2]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_external_1d(w, bufinfo.buf, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_mat_create_external_1d_obj, ncnn_mp_mat_create_external_1d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_1d_obj, 2, 3, ncnn_mp_mat_create_external_1d);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_external_2d(int w, int h, void* data, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_external_2d(w, h, data, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_external_2d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 4, 4, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[3]);
+    ncnn_allocator_t allocator = n_args == 4 ? (ncnn_allocator_t)mp_obj_get_int(args[3]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_external_2d(w, h, bufinfo.buf, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_2d_obj, 4, 4, ncnn_mp_mat_create_external_2d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_2d_obj, 3, 4, ncnn_mp_mat_create_external_2d);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_external_3d(int w, int h, int c, void* data, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_external_3d(w, h, c, data, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_external_3d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 5, 5, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     int c = mp_obj_get_int(args[2]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[4]);
+    ncnn_allocator_t allocator = n_args == 5 ? (ncnn_allocator_t)mp_obj_get_int(args[4]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_external_3d(w, h, c, bufinfo.buf, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_3d_obj, 5, 5, ncnn_mp_mat_create_external_3d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_3d_obj, 4, 5, ncnn_mp_mat_create_external_3d);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_external_4d(int w, int h, int d, int c, void* data, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_external_4d(w, h, d, c, data, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_external_4d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 6, 6, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     int d = mp_obj_get_int(args[2]);
     int c = mp_obj_get_int(args[3]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[4], &bufinfo, MP_BUFFER_READ);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[5]);
+    ncnn_allocator_t allocator = n_args == 6 ? (ncnn_allocator_t)mp_obj_get_int(args[5]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_external_4d(w, h, d, c, bufinfo.buf, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_4d_obj, 6, 6, ncnn_mp_mat_create_external_4d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_4d_obj, 5, 6, ncnn_mp_mat_create_external_4d);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_1d_elem(int w, size_t elemsize, int elempack, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_1d_elem(w, elemsize, elempack, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_1d_elem(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 4, 4, false);
     int w = mp_obj_get_int(args[0]);
     size_t elemsize = (size_t)mp_obj_get_int(args[1]);
     int elempack = mp_obj_get_int(args[2]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[3]);
+    ncnn_allocator_t allocator = n_args == 4 ? (ncnn_allocator_t)mp_obj_get_int(args[3]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_1d_elem(w, elemsize, elempack, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_1d_elem_obj, 4, 4, ncnn_mp_mat_create_1d_elem);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_1d_elem_obj, 3, 4, ncnn_mp_mat_create_1d_elem);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_2d_elem(int w, int h, size_t elemsize, int elempack, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_2d_elem(w, h, elemsize, elempack, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_2d_elem(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 5, 5, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     size_t elemsize = (size_t)mp_obj_get_int(args[2]);
     int elempack = mp_obj_get_int(args[3]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[4]);
+    ncnn_allocator_t allocator = n_args == 5 ? (ncnn_allocator_t)mp_obj_get_int(args[4]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_2d_elem(w, h, elemsize, elempack, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_2d_elem_obj, 5, 5, ncnn_mp_mat_create_2d_elem);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_2d_elem_obj, 4, 5, ncnn_mp_mat_create_2d_elem);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_3d_elem(int w, int h, int c, size_t elemsize, int elempack, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_3d_elem(w, h, c, elemsize, elempack, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_3d_elem(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 6, 6, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     int c = mp_obj_get_int(args[2]);
     size_t elemsize = (size_t)mp_obj_get_int(args[3]);
     int elempack = mp_obj_get_int(args[4]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[5]);
+    ncnn_allocator_t allocator = n_args == 6 ? (ncnn_allocator_t)mp_obj_get_int(args[5]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_3d_elem(w, h, c, elemsize, elempack, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_3d_elem_obj, 6, 6, ncnn_mp_mat_create_3d_elem);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_3d_elem_obj, 5, 6, ncnn_mp_mat_create_3d_elem);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_4d_elem(int w, int h, int d, int c, size_t elemsize, int elempack, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_4d_elem(w, h, d, c, elemsize, elempack, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_4d_elem(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 7, 7, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     int d = mp_obj_get_int(args[2]);
     int c = mp_obj_get_int(args[3]);
     size_t elemsize = (size_t)mp_obj_get_int(args[4]);
     int elempack = mp_obj_get_int(args[5]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[6]);
+    ncnn_allocator_t allocator = n_args == 7 ? (ncnn_allocator_t)mp_obj_get_int(args[6]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_4d_elem(w, h, d, c, elemsize, elempack, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_4d_elem_obj, 7, 7, ncnn_mp_mat_create_4d_elem);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_4d_elem_obj, 6, 7, ncnn_mp_mat_create_4d_elem);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_external_1d_elem(int w, void* data, size_t elemsize, int elempack, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_external_1d_elem(w, data, elemsize, elempack, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_external_1d_elem(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 5, 5, false);
     int w = mp_obj_get_int(args[0]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
     size_t elemsize = (size_t)mp_obj_get_int(args[2]);
     int elempack = mp_obj_get_int(args[3]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[4]);
+    ncnn_allocator_t allocator = n_args == 5 ? (ncnn_allocator_t)mp_obj_get_int(args[4]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_external_1d_elem(w, bufinfo.buf, elemsize, elempack, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_1d_elem_obj, 5, 5, ncnn_mp_mat_create_external_1d_elem);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_1d_elem_obj, 4, 5, ncnn_mp_mat_create_external_1d_elem);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_external_2d_elem(int w, int h, void* data, size_t elemsize, int elempack, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_external_2d_elem(w, h, data, elemsize, elempack, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_external_2d_elem(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 6, 6, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     size_t elemsize = (size_t)mp_obj_get_int(args[3]);
     int elempack = mp_obj_get_int(args[4]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[5]);
+    ncnn_allocator_t allocator = n_args == 6 ? (ncnn_allocator_t)mp_obj_get_int(args[5]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_external_2d_elem(w, h, bufinfo.buf, elemsize, elempack, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_2d_elem_obj, 6, 6, ncnn_mp_mat_create_external_2d_elem);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_2d_elem_obj, 5, 6, ncnn_mp_mat_create_external_2d_elem);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_external_3d_elem(int w, int h, int c, void* data, size_t elemsize, int elempack, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_external_3d_elem(w, h, c, data, elemsize, elempack, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_external_3d_elem(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 7, 7, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     int c = mp_obj_get_int(args[2]);
@@ -417,19 +405,18 @@ static mp_obj_t ncnn_mp_mat_create_external_3d_elem(size_t n_args, const mp_obj_
     mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
     size_t elemsize = (size_t)mp_obj_get_int(args[4]);
     int elempack = mp_obj_get_int(args[5]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[6]);
+    ncnn_allocator_t allocator = n_args == 7 ? (ncnn_allocator_t)mp_obj_get_int(args[6]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_external_3d_elem(w, h, c, bufinfo.buf, elemsize, elempack, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_3d_elem_obj, 7, 7, ncnn_mp_mat_create_external_3d_elem);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_3d_elem_obj, 6, 7, ncnn_mp_mat_create_external_3d_elem);
 
 // c_api:  ncnn_mat_t ncnn_mat_create_external_4d_elem(int w, int h, int d, int c, void* data, size_t elemsize, int elempack, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_create_external_4d_elem(w, h, d, c, data, elemsize, elempack, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_create_external_4d_elem(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
     int w = mp_obj_get_int(args[0]);
     int h = mp_obj_get_int(args[1]);
     int d = mp_obj_get_int(args[2]);
@@ -438,14 +425,14 @@ static mp_obj_t ncnn_mp_mat_create_external_4d_elem(size_t n_args, const mp_obj_
     mp_get_buffer_raise(args[4], &bufinfo, MP_BUFFER_READ);
     size_t elemsize = (size_t)mp_obj_get_int(args[5]);
     int elempack = mp_obj_get_int(args[6]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[7]);
+    ncnn_allocator_t allocator = n_args == 8 ? (ncnn_allocator_t)mp_obj_get_int(args[7]) : NULL;
     ncnn_mat_t mat = ncnn_mat_create_external_4d_elem(w, h, d, c, bufinfo.buf, elemsize, elempack, allocator);
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_4d_elem_obj, 8, 8, ncnn_mp_mat_create_external_4d_elem);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_create_external_4d_elem_obj, 7, 8, ncnn_mp_mat_create_external_4d_elem);
 
 // c_api:  void ncnn_mat_destroy(ncnn_mat_t mat);
 // Python: ncnn_mp.mat_destroy(mat_handle)
@@ -470,81 +457,78 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_mat_fill_float_obj, ncnn_mp_mat_fill_fl
 
 // c_api:  ncnn_mat_t ncnn_mat_clone(const ncnn_mat_t mat, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_clone(mat_handle, allocator) -> int (handle)
-static mp_obj_t ncnn_mp_mat_clone(mp_obj_t mat_obj, mp_obj_t allocator_obj) {
-    ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(mat_obj);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
+static mp_obj_t ncnn_mp_mat_clone(size_t n_args, const mp_obj_t *args) {
+    ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(args[0]);
+    ncnn_allocator_t allocator = n_args == 2 ? (ncnn_allocator_t)mp_obj_get_int(args[1]) : NULL;
     ncnn_mat_t cloned_mat = ncnn_mat_clone(mat, allocator);
     if (!cloned_mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)cloned_mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_mat_clone_obj, ncnn_mp_mat_clone);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_clone_obj, 1, 2, ncnn_mp_mat_clone);
 
 // c_api:  ncnn_mat_t ncnn_mat_reshape_1d(const ncnn_mat_t mat, int w, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_reshape_1d(mat_handle, w, allocator) -> int (handle)
-static mp_obj_t ncnn_mp_mat_reshape_1d(mp_obj_t mat_obj, mp_obj_t w_obj, mp_obj_t allocator_obj) {
-    ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(mat_obj);
-    int w = mp_obj_get_int(w_obj);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(allocator_obj);
+static mp_obj_t ncnn_mp_mat_reshape_1d(size_t n_args, const mp_obj_t *args) {
+    ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(args[0]);
+    int w = mp_obj_get_int(args[1]);
+    ncnn_allocator_t allocator = n_args == 3 ? (ncnn_allocator_t)mp_obj_get_int(args[2]) : NULL;
     ncnn_mat_t reshaped_mat = ncnn_mat_reshape_1d(mat, w, allocator);
     if (!reshaped_mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)reshaped_mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_mat_reshape_1d_obj, ncnn_mp_mat_reshape_1d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_reshape_1d_obj, 2, 3, ncnn_mp_mat_reshape_1d);
 
 // c_api:  ncnn_mat_t ncnn_mat_reshape_2d(const ncnn_mat_t mat, int w, int h, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_reshape_2d(mat_handle, w, h, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_reshape_2d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 4, 4, false);
     ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(args[0]);
     int w = mp_obj_get_int(args[1]);
     int h = mp_obj_get_int(args[2]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[3]);
+    ncnn_allocator_t allocator = n_args == 4 ? (ncnn_allocator_t)mp_obj_get_int(args[3]) : NULL;
     ncnn_mat_t reshaped_mat = ncnn_mat_reshape_2d(mat, w, h, allocator);
     if (!reshaped_mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)reshaped_mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_reshape_2d_obj, 4, 4, ncnn_mp_mat_reshape_2d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_reshape_2d_obj, 3, 4, ncnn_mp_mat_reshape_2d);
 
 // c_api:  ncnn_mat_t ncnn_mat_reshape_3d(const ncnn_mat_t mat, int w, int h, int c, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_reshape_3d(mat_handle, w, h, c, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_reshape_3d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 5, 5, false);
     ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(args[0]);
     int w = mp_obj_get_int(args[1]);
     int h = mp_obj_get_int(args[2]);
     int c = mp_obj_get_int(args[3]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[4]);
+    ncnn_allocator_t allocator = n_args == 5 ? (ncnn_allocator_t)mp_obj_get_int(args[4]) : NULL;
     ncnn_mat_t reshaped_mat = ncnn_mat_reshape_3d(mat, w, h, c, allocator);
     if (!reshaped_mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)reshaped_mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_reshape_3d_obj, 5, 5, ncnn_mp_mat_reshape_3d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_reshape_3d_obj, 4, 5, ncnn_mp_mat_reshape_3d);
 
 // c_api:  ncnn_mat_t ncnn_mat_reshape_4d(const ncnn_mat_t mat, int w, int h, int c, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_reshape_4d(mat_handle, w, h, c, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_reshape_4d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 6, 6, false);
     ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(args[0]);
     int w = mp_obj_get_int(args[1]);
     int h = mp_obj_get_int(args[2]);
     int d = mp_obj_get_int(args[3]);
     int c = mp_obj_get_int(args[4]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[5]);
+    ncnn_allocator_t allocator = n_args == 6 ? (ncnn_allocator_t)mp_obj_get_int(args[5]) : NULL;
     ncnn_mat_t reshaped_mat = ncnn_mat_reshape_4d(mat, w, h, d, c, allocator);
     if (!reshaped_mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)reshaped_mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_reshape_4d_obj, 6, 6, ncnn_mp_mat_reshape_4d);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_reshape_4d_obj, 5, 6, ncnn_mp_mat_reshape_4d);
 
 // c_api:  int ncnn_mat_get_dims(const ncnn_mat_t mat);
 // Python: ncnn_mp.mat_get_dims(mat_handle) -> int
@@ -631,8 +615,6 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_mat_get_channel_data_obj, ncnn_mp_mat_g
 // c_api:  ncnn_mat_t ncnn_mat_from_pixels(const unsigned char* pixels, int type, int w, int h, int stride, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_from_pixels(pixel_bytes, type, w, h, stride, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_from_pixels(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 6, 6, false);
-
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     
@@ -640,22 +622,19 @@ static mp_obj_t ncnn_mp_mat_from_pixels(size_t n_args, const mp_obj_t *args) {
     int w = mp_obj_get_int(args[2]);
     int h = mp_obj_get_int(args[3]);
     int stride = mp_obj_get_int(args[4]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[5]);
+    ncnn_allocator_t allocator = n_args == 6 ? (ncnn_allocator_t)mp_obj_get_int(args[5]) : NULL;
     
     ncnn_mat_t mat = ncnn_mat_from_pixels((const unsigned char*)bufinfo.buf, type, w, h, stride, allocator);
-    
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_obj, 6, 6, ncnn_mp_mat_from_pixels);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_obj, 5, 6, ncnn_mp_mat_from_pixels);
 
 // c_api:  ncnn_mat_t ncnn_mat_from_pixels_resize(const unsigned char* pixels, int type, int w, int h, int stride, int target_width, int target_height, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_from_pixels_resize(pixel_bytes, type, w, h, stride, target_w, target_h, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_from_pixels_resize(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
-
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     
@@ -665,22 +644,19 @@ static mp_obj_t ncnn_mp_mat_from_pixels_resize(size_t n_args, const mp_obj_t *ar
     int stride = mp_obj_get_int(args[4]);
     int target_width = mp_obj_get_int(args[5]);
     int target_height = mp_obj_get_int(args[6]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[7]);
+    ncnn_allocator_t allocator = n_args == 8 ? (ncnn_allocator_t)mp_obj_get_int(args[7]) : NULL;
 
     ncnn_mat_t mat = ncnn_mat_from_pixels_resize((const unsigned char*)bufinfo.buf, type, w, h, stride, target_width, target_height, allocator);
-    
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_resize_obj, 8, 8, ncnn_mp_mat_from_pixels_resize);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_resize_obj, 7, 8, ncnn_mp_mat_from_pixels_resize);
 
 // c_api:  ncnn_mat_t ncnn_mat_from_pixels_roi(const unsigned char* pixels, int type, int w, int h, int stride, int roix, int roiy, int roiw, int roih, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_from_pixels_roi(pixel_bytes, type, w, h, stride, roix, roiy, roiw, roih, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_from_pixels_roi(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 10, 10, false);
-
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     
@@ -692,22 +668,19 @@ static mp_obj_t ncnn_mp_mat_from_pixels_roi(size_t n_args, const mp_obj_t *args)
     int roiy = mp_obj_get_int(args[6]);
     int roiw = mp_obj_get_int(args[7]);
     int roih = mp_obj_get_int(args[8]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[9]);
+    ncnn_allocator_t allocator = n_args == 10 ? (ncnn_allocator_t)mp_obj_get_int(args[9]) : NULL;
 
     ncnn_mat_t mat = ncnn_mat_from_pixels_roi((const unsigned char*)bufinfo.buf, type, w, h, stride, roix, roiy, roiw, roih, allocator);
-    
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_roi_obj, 10, 10, ncnn_mp_mat_from_pixels_roi);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_roi_obj, 9, 10, ncnn_mp_mat_from_pixels_roi);
 
 // c_api:  ncnn_mat_t ncnn_mat_from_pixels_roi_resize(const unsigned char* pixels, int type, int w, int h, int stride, int roix, int roiy, int roiw, int roih, int target_width, int target_height, ncnn_allocator_t allocator);
 // Python: ncnn_mp.mat_from_pixels_roi_resize(pixel_bytes, type, w, h, stride, roix, roiy, roiw, roih, target_w, target_h, allocator) -> int (handle)
 static mp_obj_t ncnn_mp_mat_from_pixels_roi_resize(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 12, 12, false);
-
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     
@@ -721,21 +694,19 @@ static mp_obj_t ncnn_mp_mat_from_pixels_roi_resize(size_t n_args, const mp_obj_t
     int roih = mp_obj_get_int(args[8]);
     int target_width = mp_obj_get_int(args[9]);
     int target_height = mp_obj_get_int(args[10]);
-    ncnn_allocator_t allocator = (ncnn_allocator_t)mp_obj_get_int(args[11]);
+    ncnn_allocator_t allocator = n_args == 12 ? (ncnn_allocator_t)mp_obj_get_int(args[11]) : NULL;
 
     ncnn_mat_t mat = ncnn_mat_from_pixels_roi_resize((const unsigned char*)bufinfo.buf, type, w, h, stride, roix, roiy, roiw, roih, target_width, target_height, allocator);
-    
     if (!mat) {
         return mp_const_none;
     }
     return mp_obj_new_int_from_ull((uintptr_t)mat);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_roi_resize_obj, 12, 12, ncnn_mp_mat_from_pixels_roi_resize);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_from_pixels_roi_resize_obj, 11, 12, ncnn_mp_mat_from_pixels_roi_resize);
 
 // c_api:  void ncnn_mat_to_pixels(const ncnn_mat_t mat, unsigned char* pixels, int type, int stride);
 // Python: ncnn_mp.mat_to_pixels(mat_handle, buffer, type, stride) -> None
 static mp_obj_t ncnn_mp_mat_to_pixels(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 4, 4, false);
     ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(args[0]);
     int type = mp_obj_get_int(args[2]);
     int stride = mp_obj_get_int(args[3]);
@@ -752,7 +723,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_mat_to_pixels_obj, 4, 4, ncnn
 // c_api:  void ncnn_mat_to_pixels_resize(const ncnn_mat_t mat, unsigned char* pixels, int type, int target_width, int target_height, int target_stride);
 // Python: ncnn_mp.mat_to_pixels_resize(mat_handle, buffer, type, target_w, target_h, target_stride) -> None
 static mp_obj_t ncnn_mp_mat_to_pixels_resize(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 6, 6, false);
     ncnn_mat_t mat = (ncnn_mat_t)mp_obj_get_int(args[0]);
     
     mp_buffer_info_t bufinfo;
@@ -789,7 +759,6 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_mat_substract_mean_normalize_obj, ncnn_
 // c_api:  void ncnn_convert_packing(const ncnn_mat_t src, ncnn_mat_t* dst, int elempack, const ncnn_option_t opt);
 // Python: ncnn_mp.convert_packing(src_handle, dst_handle, elempack, opt_handle) -> None
 static mp_obj_t ncnn_mp_convert_packing(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 4, 4, false);
     ncnn_mat_t src = (ncnn_mat_t)mp_obj_get_int(args[0]);
     ncnn_mat_t dst = (ncnn_mat_t)mp_obj_get_int(args[1]);
     int elempack = mp_obj_get_int(args[2]);
@@ -1109,7 +1078,6 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_modelbin_load_1d_obj, ncnn_mp_modelbin_
 // c_api: ncnn_mat_t (*load_2d)(const ncnn_modelbin_t mb, int w, int h, int type);
 // Python: ncnn_mp.modelbin_load_2d(mb_handle, w, h, type) -> int (mat_handle)
 static mp_obj_t ncnn_mp_modelbin_load_2d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 4, 4, false);
     ncnn_modelbin_t mb = (ncnn_modelbin_t)mp_obj_get_int(args[0]);
     int w = mp_obj_get_int(args[1]);
     int h = mp_obj_get_int(args[2]);
@@ -1122,7 +1090,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_modelbin_load_2d_obj, 4, 4, n
 // c_api: ncnn_mat_t (*load_3d)(const ncnn_modelbin_t mb, int w, int h, int c, int type);
 // Python: ncnn_mp.modelbin_load_3d(mb_handle, w, h, c, type) -> int (mat_handle)
 static mp_obj_t ncnn_mp_modelbin_load_3d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 5, 5, false);
     ncnn_modelbin_t mb = (ncnn_modelbin_t)mp_obj_get_int(args[0]);
     int w = mp_obj_get_int(args[1]);
     int h = mp_obj_get_int(args[2]);
@@ -1465,7 +1432,6 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_layer_forward_1_obj, ncnn_mp_layer_forw
 // c_api: int (*forward_n)(const ncnn_layer_t layer, const ncnn_mat_t* bottom_blobs, int n, ncnn_mat_t* top_blobs, int n2, const ncnn_option_t opt);
 // Python: ncnn_mp.layer_forward_n(layer_handle, bottom_blobs_tuple, num_outputs, opt_handle) -> tuple
 static mp_obj_t ncnn_mp_layer_forward_n(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 4, 4, false);
     ncnn_layer_t layer = (ncnn_layer_t)mp_obj_get_int(args[0]);
     mp_obj_t bottom_blobs_obj = args[1];
     int n2 = mp_obj_get_int(args[2]);
@@ -1582,7 +1548,6 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_net_set_vulkan_device_obj, ncnn_mp_net_
 // Python: ncnn_mp.net_register_custom_layer_by_type(net, type, creator, destroyer, userdata)
 #if NCNN_STRING
 static mp_obj_t ncnn_mp_net_register_custom_layer_by_type(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 5, 5, false);
     ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(args[0]);
     const char* type = mp_obj_str_get_str(args[1]);
     ncnn_layer_creator_t creator = (ncnn_layer_creator_t)mp_obj_get_int(args[2]);
@@ -1597,7 +1562,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_net_register_custom_layer_by_
 // c_api: void ncnn_net_register_custom_layer_by_typeindex(ncnn_net_t net, int typeindex, ncnn_layer_creator_t creator, ncnn_layer_destroyer_t destroyer, void* userdata);
 // Python: ncnn_mp.net_register_custom_layer_by_typeindex(net, typeindex, creator, destroyer, userdata)
 static mp_obj_t ncnn_mp_net_register_custom_layer_by_typeindex(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 5, 5, false);
     ncnn_net_t net = (ncnn_net_t)mp_obj_get_int(args[0]);
     int typeindex = mp_obj_get_int(args[1]);
     ncnn_layer_creator_t creator = (ncnn_layer_creator_t)mp_obj_get_int(args[2]);
@@ -1871,7 +1835,6 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_extractor_extract_index_obj, ncnn_mp_ex
 // c_api:  void ncnn_copy_make_border(const ncnn_mat_t src, ncnn_mat_t dst, int top, int bottom, int left, int right, int type, float v, const ncnn_option_t opt);
 // Python: ncnn_mp.copy_make_border(src_handle, dst_handle, top, bottom, left, right, type, v, opt_handle) -> None
 static mp_obj_t ncnn_mp_copy_make_border(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     ncnn_mat_t src = (ncnn_mat_t)mp_obj_get_int(args[0]);
     ncnn_mat_t dst = (ncnn_mat_t)mp_obj_get_int(args[1]);
     int top = mp_obj_get_int(args[2]);
@@ -1889,7 +1852,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_copy_make_border_obj, 9, 9, n
 // c_api:  void ncnn_copy_make_border_3d(const ncnn_mat_t src, ncnn_mat_t dst, int top, int bottom, int left, int right, int front, int behind, int type, float v, const ncnn_option_t opt);
 // Python: ncnn_mp.copy_make_border_3d(src_handle, dst_handle, top, bottom, left, right, front, behind, type, v, opt_handle) -> None
 static mp_obj_t ncnn_mp_copy_make_border_3d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 11, 11, false);
     ncnn_mat_t src = (ncnn_mat_t)mp_obj_get_int(args[0]);
     ncnn_mat_t dst = (ncnn_mat_t)mp_obj_get_int(args[1]);
     int top = mp_obj_get_int(args[2]);
@@ -1909,7 +1871,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_copy_make_border_3d_obj, 11, 
 // c_api:  void ncnn_copy_cut_border(const ncnn_mat_t src, ncnn_mat_t dst, int top, int bottom, int left, int right, const ncnn_option_t opt);
 // Python: ncnn_mp.copy_cut_border(src_handle, dst_handle, top, bottom, left, right, opt_handle) -> None
 static mp_obj_t ncnn_mp_copy_cut_border(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 7, 7, false);
     ncnn_mat_t src = (ncnn_mat_t)mp_obj_get_int(args[0]);
     ncnn_mat_t dst = (ncnn_mat_t)mp_obj_get_int(args[1]);
     int top = mp_obj_get_int(args[2]);
@@ -1925,7 +1886,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_copy_cut_border_obj, 7, 7, nc
 // c_api:  void ncnn_copy_cut_border_3d(const ncnn_mat_t src, ncnn_mat_t dst, int top, int bottom, int left, int right, int front, int behind, const ncnn_option_t opt);
 // Python: ncnn_mp.copy_cut_border_3d(src_handle, dst_handle, top, bottom, left, right, front, behind, opt_handle) -> None
 static mp_obj_t ncnn_mp_copy_cut_border_3d(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     ncnn_mat_t src = (ncnn_mat_t)mp_obj_get_int(args[0]);
     ncnn_mat_t dst = (ncnn_mat_t)mp_obj_get_int(args[1]);
     int top = mp_obj_get_int(args[2]);
@@ -1948,7 +1908,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_copy_cut_border_3d_obj, 9, 9,
 // c_api:  void ncnn_draw_rectangle_c1(unsigned char* pixels, int w, int h, int rx, int ry, int rw, int rh, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_rectangle_c1(buffer, w, h, rx, ry, rw, rh, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_rectangle_c1(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -1967,7 +1926,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_rectangle_c1_obj, 9, 9, 
 // c_api:  void ncnn_draw_rectangle_c2(unsigned char* pixels, int w, int h, int rx, int ry, int rw, int rh, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_rectangle_c2(buffer, w, h, rx, ry, rw, rh, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_rectangle_c2(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -1986,7 +1944,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_rectangle_c2_obj, 9, 9, 
 // c_api:  void ncnn_draw_rectangle_c3(unsigned char* pixels, int w, int h, int rx, int ry, int rw, int rh, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_rectangle_c3(buffer, w, h, rx, ry, rw, rh, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_rectangle_c3(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2005,7 +1962,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_rectangle_c3_obj, 9, 9, 
 // c_api:  void ncnn_draw_rectangle_c4(unsigned char* pixels, int w, int h, int rx, int ry, int rw, int rh, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_rectangle_c4(buffer, w, h, rx, ry, rw, rh, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_rectangle_c4(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2024,7 +1980,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_rectangle_c4_obj, 9, 9, 
 // c_api:  void ncnn_draw_text_c1(unsigned char* pixels, int w, int h, const char* text, int x, int y, int fontpixelsize, unsigned int color);
 // Python: ncnn_mp.draw_text_c1(buffer, w, h, text, x, y, fontpixelsize, color) -> None
 static mp_obj_t ncnn_mp_draw_text_c1(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2042,7 +1997,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_text_c1_obj, 8, 8, ncnn_
 // c_api:  void ncnn_draw_text_c2(unsigned char* pixels, int w, int h, const char* text, int x, int y, int fontpixelsize, unsigned int color);
 // Python: ncnn_mp.draw_text_c2(buffer, w, h, text, x, y, fontpixelsize, color) -> None
 static mp_obj_t ncnn_mp_draw_text_c2(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2060,7 +2014,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_text_c2_obj, 8, 8, ncnn_
 // c_api:  void ncnn_draw_text_c3(unsigned char* pixels, int w, int h, const char* text, int x, int y, int fontpixelsize, unsigned int color);
 // Python: ncnn_mp.draw_text_c3(buffer, w, h, text, x, y, fontpixelsize, color) -> None
 static mp_obj_t ncnn_mp_draw_text_c3(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2078,7 +2031,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_text_c3_obj, 8, 8, ncnn_
 // c_api:  void ncnn_draw_text_c4(unsigned char* pixels, int w, int h, const char* text, int x, int y, int fontpixelsize, unsigned int color);
 // Python: ncnn_mp.draw_text_c4(buffer, w, h, text, x, y, fontpixelsize, color) -> None
 static mp_obj_t ncnn_mp_draw_text_c4(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2096,7 +2048,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_text_c4_obj, 8, 8, ncnn_
 // c_api:  void ncnn_draw_circle_c1(unsigned char* pixels, int w, int h, int cx, int cy, int radius, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_circle_c1(buffer, w, h, cx, cy, radius, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_circle_c1(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2114,7 +2065,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_circle_c1_obj, 8, 8, ncn
 // c_api:  void ncnn_draw_circle_c2(unsigned char* pixels, int w, int h, int cx, int cy, int radius, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_circle_c2(buffer, w, h, cx, cy, radius, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_circle_c2(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2132,7 +2082,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_circle_c2_obj, 8, 8, ncn
 // c_api:  void ncnn_draw_circle_c3(unsigned char* pixels, int w, int h, int cx, int cy, int radius, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_circle_c3(buffer, w, h, cx, cy, radius, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_circle_c3(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2150,7 +2099,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_circle_c3_obj, 8, 8, ncn
 // c_api:  void ncnn_draw_circle_c4(unsigned char* pixels, int w, int h, int cx, int cy, int radius, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_circle_c4(buffer, w, h, cx, cy, radius, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_circle_c4(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 8, 8, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2168,7 +2116,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_circle_c4_obj, 8, 8, ncn
 // c_api:  void ncnn_draw_line_c1(unsigned char* pixels, int w, int h, int x0, int y0, int x1, int y1, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_line_c1(buffer, w, h, x0, y0, x1, y1, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_line_c1(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2187,7 +2134,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_line_c1_obj, 9, 9, ncnn_
 // c_api:  void ncnn_draw_line_c2(unsigned char* pixels, int w, int h, int x0, int y0, int x1, int y1, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_line_c2(buffer, w, h, x0, y0, x1, y1, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_line_c2(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2206,7 +2152,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_line_c2_obj, 9, 9, ncnn_
 // c_api:  void ncnn_draw_line_c3(unsigned char* pixels, int w, int h, int x0, int y0, int x1, int y1, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_line_c3(buffer, w, h, x0, y0, x1, y1, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_line_c3(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
@@ -2225,7 +2170,6 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_draw_line_c3_obj, 9, 9, ncnn_
 // c_api:  void ncnn_draw_line_c4(unsigned char* pixels, int w, int h, int x0, int y0, int x1, int y1, unsigned int color, int thickness);
 // Python: ncnn_mp.draw_line_c4(buffer, w, h, x0, y0, x1, y1, color, thickness) -> None
 static mp_obj_t ncnn_mp_draw_line_c4(size_t n_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, 0, 9, 9, false);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
     int w = mp_obj_get_int(args[1]);
