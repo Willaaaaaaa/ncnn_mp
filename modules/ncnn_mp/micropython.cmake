@@ -1,47 +1,44 @@
 add_library(ncnn_mpy INTERFACE)
 
-set(NCNN_SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/../ncnn/src)
-
-file(GLOB NCNN_CORE_SRC
-    "${NCNN_SRC_DIR}/*.cpp"
-)
-# some hw may not support vulkan
-list(FILTER NCNN_CORE_SRC EXCLUDE REGEX ".*vulkan.*")
-
-file(GLOB_RECURSE NCNN_ALL_LAYER_SRC
-    "${NCNN_SRC_DIR}/layer/*.cpp"
-)
-# exclude non-embedded sources
-list(FILTER NCNN_ALL_LAYER_SRC EXCLUDE REGEX "/vulkan/")
-list(FILTER NCNN_ALL_LAYER_SRC EXCLUDE REGEX "/x86/")
-# list(FILTER NCNN_ALL_LAYER_SRC EXCLUDE REGEX "/mips/")
-
+# Add the binding file to the library.
 target_sources(ncnn_mpy INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/ncnn_mp.c
-    ${NCNN_CORE_SRC}
-    ${NCNN_ALL_LAYER_SRC}
 )
 
-target_include_directories(ncnn_mpy INTERFACE
-    ${NCNN_SRC_DIR}
+#[[
+Add link flags here due to linking error:
+/home/willaaaaaaa/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld: /home/willaaaaaaa/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/lib/esp32/no-rtti/libm_nano.a(libm_a-fegetround.o): in function `fesetround':
+/builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libm/machine/xtensa/fegetround.c:43: multiple definition of `fesetround'; /home/willaaaaaaa/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/lib/esp32/no-rtti/libm_nano.a(libm_a-fesetround.o):/builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libm/fenv/fesetround.c:65: first defined here
+]]
+target_link_options(ncnn_mpy INTERFACE 
+    "$<$<COMPILE_LANGUAGE:C>:-Wl,--allow-multiple-definition>"
+    "$<$<COMPILE_LANGUAGE:CXX>:-Wl,--allow-multiple-definition>"
 )
 
-target_compile_definitions(ncnn_mpy INTERFACE
-    # Disable features not needed in MicroPython
-    NCNN_VULKAN=0
-    NCNN_BUILD_TOOLS=0
-    NCNN_BUILD_EXAMPLES=0
-    NCNN_BUILD_BENCHMARK=0
-    NCNN_BUILD_TESTS=0
-    NCNN_PYTHON=0
-    NCNN_STDIO=1
-    NCNN_STRING=1
-    NCNN_PIXEL=1
-    NCNN_SIMPLEOMP=1
-    NCNN_SIMPLESTL=1
-    NCNN_DISABLE_RTTI=1
-    NCNN_DISABLE_EXCEPTION=1
-)
+find_package(ncnn CONFIG)
 
-# Link the main 'usermod' target.
+if(ncnn_FOUND)
+    message(STATUS "Found ncnn via find_package. Using its include directories and link libraries.")
+    target_include_directories(ncnn_mpy INTERFACE
+        ${ncnn_INCLUDE_DIRS}
+    )
+    target_link_libraries(ncnn_mpy INTERFACE
+        ${ncnn_LIBRARIES}
+    )
+else()
+    message(STATUS "ncnn not found via find_package. Using manual path setup.")
+    if(NOT DEFINED NCNN_INSTALL_PREFIX)
+        set(NCNN_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../ncnn/build/install" CACHE PATH "Path to the ncnn installation directory.")
+    endif()
+
+    target_include_directories(ncnn_mpy INTERFACE
+        "${NCNN_INSTALL_PREFIX}/include"
+    )
+    # Link the pre-built ncnn static library.
+    target_link_libraries(ncnn_mpy INTERFACE
+        "${NCNN_INSTALL_PREFIX}/lib/libncnn.a"
+    )
+endif()
+
+# Link our user module to the main 'usermod' target.
 target_link_libraries(usermod INTERFACE ncnn_mpy)

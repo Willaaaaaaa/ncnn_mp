@@ -12,15 +12,53 @@
 - CMake/GNU Make
 
 ## 构建
+MicroPython 针对不同的端口可能需要不同的构建工具，以下列举一些端口的示例供参考：
+### Linux-使用 Make
 1. ncnn
-```
-cmake -DCMAKE_BUILD_TYPE=Release -DNCNN_SHARED_LIB=OFF -DNCNN_VULKAN=OFF -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_SIMPLESTL=OFF -DNCNN_RUNTIME_CPU=ON -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_EXAMPLES=OFF -DNCNN_BUILD_BENCHMARK=OFF -DNCNN_BUILD_TESTS=OFF -DNCNN_PYTHON=OFF -DNCNN_STDIO=ON -DNCNN_STRING=ON -DNCNN_PIXEL=ON -DNCNN_DISABLE_RTTI=ON -DNCNN_DISABLE_EXCEPTION=ON ..
+```bash
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_SIMPLESTL=OFF -DNCNN_BUILD_BENCHMARK=ON -DNCNN_BUILD_TESTS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
+make -j4
+make install
 ```
 2. mpy
 ```bash
-~/dev/ncnn_mp$ cd micropython/ports/unix/
-~/dev/ncnn_mp/micropython/ports/unix$ make -C ../../mpy-cross
-~/dev/ncnn_mp/micropython/ports/unix$ make submodules
-~/dev/ncnn_mp/micropython/ports/unix$ make USER_C_MODULES=../../../modules
-~/dev/ncnn_mp/micropython/ports/unix$ ./build-standard/micropython ../../../examples/main.py
+cd micropython/ports/unix/
+make -C ../../mpy-cross -j4
+make submodules -j4
+make USER_C_MODULES=../../../modules -j4
+./build-standard/micropython ../../../examples/main.py
 ```
+
+### esp32-使用 CMake
+这里应该是交叉编译，以 Linux 操作系统为例：
+0. 准备工具链：`esp-idf` sdk
+```shell
+git clone https://github.com/espressif/esp-idf
+cd esp-idf
+```
+根据 Micropython 的官方文档，我们必须使用 `esp-idf` 的一些特定版本。具体支持的版本[点击可得](https://github.com/micropython/micropython/blob/744270ac1b9ed3929cd41d1a6e1f6ea0e785745d/ports/esp32/README.md?plain=1#L33-L34) （这个链接更新于 2025.08.13）。查看最新的支持版本请在[这个文档]((https://github.com/micropython/micropython/blob/master/ports/esp32/README.md))中进行搜索查找。
+```shell
+git checkout v5.4.2
+git submodule update --init --recursive
+sh ./install.sh
+source export.sh
+```
+
+1. ncnn
+```bash
+cd ncnn
+mkdir build-esp32 && cd build-esp32
+cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains/esp32.toolchain.cmake -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_STRING=OFF -DNCNN_BF16=OFF -DNCNN_DISABLE_RTTI=ON -DNCNN_DISABLE_EXCEPTION=ON -DNCNN_DISABLE_PIC=ON -DNCNN_PIXEL_DRAWING=OFF -DWITH_LAYER_convolution3d=OFF -DWITH_LAYER_pooling3d=OFF -DWITH_LAYER_deconvolution3d=OFF -DWITH_LAYER_convolutiondepthwise3d=OFF -DWITH_LAYER_deconvolutiondepthwise3d=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
+make -j4
+make install
+```
+
+2. micropython
+```bash
+cd micropython/ports/esp32
+make -C ../../mpy-cross -j4
+make submodules -j4
+make USER_C_MODULES=../../../../modules/ncnn_mp CMAKE_ARGS="-DNCNN_INSTALL_PREFIX=../../../ncnn/build-esp32/install"
+```
+

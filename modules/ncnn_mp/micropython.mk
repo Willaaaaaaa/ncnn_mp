@@ -1,6 +1,6 @@
 NCNN_MP_MOD_DIR := $(USERMOD_DIR)
 NCNN_DIR := $(NCNN_MP_MOD_DIR)/../../ncnn
-NCNN_BUILD_DIR := $(NCNN_DIR)/build/src
+NCNN_INSTALL_PREFIX := $(NCNN_DIR)/build/install
 
 SRC_USERMOD_C += $(NCNN_MP_MOD_DIR)/ncnn_mp.c
 
@@ -9,10 +9,8 @@ SRC_USERMOD_C += $(NCNN_MP_MOD_DIR)/ncnn_mp.c
 # CXXFLAGS_USERMOD += -fopenmp
 
 # Include directories
-CXXFLAGS_USERMOD += -I$(NCNN_DIR)/src
-CFLAGS_USERMOD += -I$(NCNN_DIR)/src
-CXXFLAGS_USERMOD += -I$(NCNN_BUILD_DIR)
-CFLAGS_USERMOD += -I$(NCNN_BUILD_DIR)
+CXXFLAGS_USERMOD += -I$(NCNN_INSTALL_PREFIX)/include
+CFLAGS_USERMOD += -I$(NCNN_INSTALL_PREFIX)/include
 
 # Other compiler flags
 CXXFLAGS_USERMOD += -std=c++11
@@ -20,7 +18,7 @@ CFLAGS_USERMOD += -Wno-unused-function
 CXXFLAGS_USERMOD += -Wno-unused-function
 
 # Linker flags
-LDFLAGS_USERMOD += -L$(NCNN_BUILD_DIR)
+LDFLAGS_USERMOD += -L$(NCNN_INSTALL_PREFIX)/lib
 LDFLAGS_USERMOD += -lncnn
 LDFLAGS_USERMOD += -lstdc++
 # LDFLAGS_USERMOD += -fopenmp

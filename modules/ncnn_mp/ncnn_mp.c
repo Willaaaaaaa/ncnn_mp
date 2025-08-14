@@ -1,6 +1,6 @@
 #include "py/runtime.h"
 #include "py/obj.h"
-#include "c_api.h"
+#include "ncnn/c_api.h"
 
 // c_api:  const char* ncnn_version(void);
 // Python: ncnn_mp.version() -> str
@@ -2339,13 +2339,13 @@ static const mp_rom_map_elem_t ncnn_mp_module_globals_table[] = {
 #endif // NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_net_load_param_bin), MP_ROM_PTR(&ncnn_mp_net_load_param_bin_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_load_model), MP_ROM_PTR(&ncnn_mp_net_load_model_obj) },
-    { MP_ROM_QSTR(MP_QSTR_net_load_param_memory), MP_ROM_PTR(&ncnn_mp_net_load_param_memory_obj) },
 #endif // NCNN_STDIO
 #if NCNN_STDIO
 #if NCNN_STRING
-    { MP_ROM_QSTR(MP_QSTR_net_load_param_bin_memory), MP_ROM_PTR(&ncnn_mp_net_load_param_bin_memory_obj) },
+    { MP_ROM_QSTR(MP_QSTR_net_load_param_memory), MP_ROM_PTR(&ncnn_mp_net_load_param_memory_obj) },
 #endif // NCNN_STRING
 #endif // NCNN_STDIO
+    { MP_ROM_QSTR(MP_QSTR_net_load_param_bin_memory), MP_ROM_PTR(&ncnn_mp_net_load_param_bin_memory_obj) },
     { MP_ROM_QSTR(MP_QSTR_net_load_model_memory), MP_ROM_PTR(&ncnn_mp_net_load_model_memory_obj) },
 #if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_net_load_param_datareader), MP_ROM_PTR(&ncnn_mp_net_load_param_datareader_obj) },
