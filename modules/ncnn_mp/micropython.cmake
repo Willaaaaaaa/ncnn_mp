@@ -6,6 +6,7 @@ target_sources(ncnn_mpy INTERFACE
 )
 
 #[[
+TODO
 Add link flags here due to linking error:
 /home/willaaaaaaa/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld: /home/willaaaaaaa/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/lib/esp32/no-rtti/libm_nano.a(libm_a-fegetround.o): in function `fesetround':
 /builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libm/machine/xtensa/fegetround.c:43: multiple definition of `fesetround'; /home/willaaaaaaa/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/lib/esp32/no-rtti/libm_nano.a(libm_a-fesetround.o):/builds/idf/crosstool-NG/.build/xtensa-esp-elf/src/newlib/newlib/libm/fenv/fesetround.c:65: first defined here
@@ -15,10 +16,10 @@ target_link_options(ncnn_mpy INTERFACE
     "$<$<COMPILE_LANGUAGE:CXX>:-Wl,--allow-multiple-definition>"
 )
 
-find_package(ncnn CONFIG)
+find_package(ncnn CONFIG QUIET)
 
 if(ncnn_FOUND)
-    message(STATUS "Found ncnn via find_package. Using its include directories and link libraries.")
+    message(STATUS "Found ncnn via find_package.")
     target_include_directories(ncnn_mpy INTERFACE
         ${ncnn_INCLUDE_DIRS}
     )
@@ -26,17 +27,21 @@ if(ncnn_FOUND)
         ${ncnn_LIBRARIES}
     )
 else()
-    message(STATUS "ncnn not found via find_package. Using manual path setup.")
+    message(STATUS "ncnn not found via find_package.")
     if(NOT DEFINED NCNN_INSTALL_PREFIX)
+        message(STATUS "NCNN_INSTALL_PREFIX not specified, using ncnn/build/install")
         set(NCNN_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../ncnn/build/install" CACHE PATH "Path to the ncnn installation directory.")
     endif()
 
+    get_filename_component(NCNN_ABSOLUTE_INSTALL_DIR ${NCNN_INSTALL_PREFIX} ABSOLUTE)
+    message(STATUS "ncnn path is: ${NCNN_ABSOLUTE_INSTALL_DIR}")
+
     target_include_directories(ncnn_mpy INTERFACE
-        "${NCNN_INSTALL_PREFIX}/include"
+        "${NCNN_ABSOLUTE_INSTALL_DIR}/include"
     )
     # Link the pre-built ncnn static library.
     target_link_libraries(ncnn_mpy INTERFACE
-        "${NCNN_INSTALL_PREFIX}/lib/libncnn.a"
+        "${NCNN_ABSOLUTE_INSTALL_DIR}/lib/libncnn.a"
     )
 endif()
 

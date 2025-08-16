@@ -13,7 +13,8 @@
 
 ## 构建
 MicroPython 针对不同的端口可能需要不同的构建工具，以下列举一些端口的示例供参考：
-### Linux-使用 Make
+
+### Linux: 使用 Make
 1. ncnn
 ```bash
 mkdir build && cd build
@@ -30,8 +31,10 @@ make USER_C_MODULES=../../../modules -j4
 ./build-standard/micropython ../../../examples/main.py
 ```
 
-### esp32-使用 CMake
+### esp32-s3: 使用 CMake
+
 这里应该是交叉编译，以 Linux 操作系统为例：
+
 0. 准备工具链：`esp-idf` sdk
 ```shell
 git clone https://github.com/espressif/esp-idf
@@ -41,15 +44,15 @@ cd esp-idf
 ```shell
 git checkout v5.4.2
 git submodule update --init --recursive
-sh ./install.sh
+sh ./install.sh esp32s3
 source export.sh
 ```
 
 1. ncnn
 ```bash
 cd ncnn
-mkdir build-esp32 && cd build-esp32
-cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains/esp32.toolchain.cmake -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_STRING=OFF -DNCNN_BF16=OFF -DNCNN_DISABLE_RTTI=ON -DNCNN_DISABLE_EXCEPTION=ON -DNCNN_DISABLE_PIC=ON -DNCNN_PIXEL_DRAWING=OFF -DWITH_LAYER_convolution3d=OFF -DWITH_LAYER_pooling3d=OFF -DWITH_LAYER_deconvolution3d=OFF -DWITH_LAYER_convolutiondepthwise3d=OFF -DWITH_LAYER_deconvolutiondepthwise3d=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
+mkdir build-esp32s3 && cd build-esp32s3
+cmake -DCMAKE_TOOLCHAIN_FILE=../../toolchains/esp32s3.toolchain.cmake -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_STRING=OFF -DNCNN_BF16=OFF -DNCNN_DISABLE_RTTI=ON -DNCNN_DISABLE_EXCEPTION=ON -DNCNN_DISABLE_PIC=ON -DNCNN_PIXEL_DRAWING=OFF -DWITH_LAYER_convolution3d=OFF -DWITH_LAYER_pooling3d=OFF -DWITH_LAYER_deconvolution3d=OFF -DWITH_LAYER_convolutiondepthwise3d=OFF -DWITH_LAYER_deconvolutiondepthwise3d=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
 make -j4
 make install
 ```
@@ -58,7 +61,17 @@ make install
 ```bash
 cd micropython/ports/esp32
 make -C ../../mpy-cross -j4
-make submodules -j4
-make USER_C_MODULES=../../../../modules/ncnn_mp CMAKE_ARGS="-DNCNN_INSTALL_PREFIX=../../../ncnn/build-esp32/install"
+make submodules BOARD=ESP32_GENERIC_S3 -j4
+idf.py -D MICROPY_BOARD=ESP32_GENERIC_S3 -D USER_C_MODULES=../../../../modules/ncnn_mp/micropython.cmake -D NCNN_INSTALL_PREFIX=../../../../ncnn/build-esp32s3/install build
 ```
 
+3. 烧录
+```bash
+idf.py -p /dev/ttyACM0 erase-flash  # [optional]擦除开发板整个 Flash 芯片上的内容
+idf.py -p /dev/ttyACM0 flash
+idf.py -p /dev/ttyACM0 monitor  # 也可以 tio /dev/ttyACM0
+```
+
+参考: 
+- esp-idf官方指导: https://docs.espressif.com/projects/esp-idf/zh_CN/stable/esp32s3/get-started/index.html
+- 如果你使用 wsl: https://learn.microsoft.com/zh-cn/windows/wsl/connect-usb#attach-a-usb-device
