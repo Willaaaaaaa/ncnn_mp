@@ -2,6 +2,67 @@
 #include "py/obj.h"
 #include "ncnn/c_api.h"
 
+extern const mp_obj_type_t ncnn_mp_type_Allocator;
+extern const mp_obj_type_t ncnn_mp_type_Option;
+extern const mp_obj_type_t ncnn_mp_type_Mat;
+extern const mp_obj_type_t ncnn_mp_type_Blob;
+extern const mp_obj_type_t ncnn_mp_type_ParamDict;
+extern const mp_obj_type_t ncnn_mp_type_DataReader;
+extern const mp_obj_type_t ncnn_mp_type_ModelBin;
+extern const mp_obj_type_t ncnn_mp_type_Layer;
+extern const mp_obj_type_t ncnn_mp_type_Net;
+extern const mp_obj_type_t ncnn_mp_type_Extractor;
+
+typedef struct _ncnn_mp_Allocator_obj_t {
+    mp_obj_base_t base;
+    ncnn_allocator_t allocator;
+} ncnn_mp_Allocator_obj_t;
+
+typedef struct _ncnn_mp_Option_obj_t {
+    mp_obj_base_t base;
+    ncnn_option_t opt;
+} ncnn_mp_Option_obj_t;
+
+typedef struct _ncnn_mp_Mat_obj_t {
+    mp_obj_base_t base;
+    ncnn_mat_t mat;
+} ncnn_mp_Mat_obj_t;
+
+typedef struct _ncnn_mp_Blob_obj_t {
+    mp_obj_base_t base;
+    ncnn_blob_t blob;
+} ncnn_mp_Blob_obj_t;
+
+typedef struct _ncnn_mp_ParamDict_obj_t {
+    mp_obj_base_t base;
+    ncnn_paramdict_t pd;
+} ncnn_mp_ParamDict_obj_t;
+
+typedef struct _ncnn_mp_DataReader_obj_t {
+    mp_obj_base_t base;
+    ncnn_datareader_t dr;
+} ncnn_mp_DataReader_obj_t;
+
+typedef struct _ncnn_mp_ModelBin_obj_t {
+    mp_obj_base_t base;
+    ncnn_modelbin_t mb;
+} ncnn_mp_ModelBin_obj_t;
+
+typedef struct _ncnn_mp_Layer_obj_t {
+    mp_obj_base_t base;
+    ncnn_layer_t layer;
+} ncnn_mp_Layer_obj_t;
+
+typedef struct _ncnn_mp_Net_obj_t {
+    mp_obj_base_t base;
+    ncnn_net_t net;
+} ncnn_mp_Net_obj_t;
+
+typedef struct _ncnn_mp_Extractor_obj_t {
+    mp_obj_base_t base;
+    ncnn_extractor_t ex;
+} ncnn_mp_Extractor_obj_t;
+
 // ncnn_mp.version()
 static mp_obj_t ncnn_mp_version(void) {
     const char* ver_str = ncnn_version();
@@ -12,10 +73,6 @@ static MP_DEFINE_CONST_FUN_OBJ_0(ncnn_mp_version_obj, ncnn_mp_version);
 // ------------------
 /* allocator api */
 // ------------------
-typedef struct _ncnn_mp_Allocator_obj_t {
-    mp_obj_base_t base;
-    ncnn_allocator_t allocator;
-} ncnn_mp_Allocator_obj_t;
 
 // Constructor: Allocator.__new__ and Allocator.__init__
 // Usage: Allocator() or Allocator(unlocked=True)
@@ -93,10 +150,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // ------------------
 /* option api */
 // ------------------
-typedef struct _ncnn_mp_Option_obj_t {
-    mp_obj_base_t base;
-    ncnn_option_t opt;
-} ncnn_mp_Option_obj_t;
 
 // Constructor: Option.__new__ and Option.__init__
 // Usage: Option()
@@ -193,10 +246,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // ------------------
 /* mat api */
 // ------------------
-typedef struct _ncnn_mp_Mat_obj_t {
-    mp_obj_base_t base;
-    ncnn_mat_t mat;
-} ncnn_mp_Mat_obj_t;
 
 // Constructor: Mat.__new__ and Mat.__init__
 static mp_obj_t ncnn_mp_Mat_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -266,7 +315,7 @@ static mp_obj_t ncnn_mp_Mat_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
 
     if (!mat) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to create ncnn mat");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to create ncnn mat"));
     }
 
     ncnn_mp_Mat_obj_t *self = mp_obj_malloc(ncnn_mp_Mat_obj_t, type);
@@ -290,7 +339,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_Mat_deinit_obj, ncnn_mp_Mat_deinit);
 // c_api:  void ncnn_mat_fill_float(ncnn_mat_t mat, float v);
 static mp_obj_t ncnn_mp_Mat_fill(mp_obj_t self_in, mp_obj_t value_obj) {
     ncnn_mp_Mat_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    float value = mp_obj_get_float(value_obj);
+    float value = (float)mp_obj_get_float(value_obj);
     ncnn_mat_fill_float(self->mat, value);
     return mp_const_none;
 }
@@ -306,7 +355,7 @@ static mp_obj_t ncnn_mp_Mat_clone(size_t n_args, const mp_obj_t *args) {
     }
     ncnn_mat_t cloned_mat = ncnn_mat_clone(self->mat, allocator);
     if (!cloned_mat) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to clone ncnn mat");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to clone ncnn mat"));
     }
     ncnn_mp_Mat_obj_t *cloned_self = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
     cloned_self->mat = cloned_mat;
@@ -336,7 +385,7 @@ static mp_obj_t ncnn_mp_Mat_reshape(size_t n_args, const mp_obj_t *args) {
         reshaped_mat = ncnn_mat_reshape_4d(self->mat, mp_obj_get_int(args[1]), mp_obj_get_int(args[2]), mp_obj_get_int(args[3]), mp_obj_get_int(args[4]), allocator);
     }
     if (!reshaped_mat) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to reshape ncnn mat");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to reshape ncnn mat"));
     }
 
     ncnn_mp_Mat_obj_t *reshaped_self = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
@@ -399,7 +448,7 @@ static mp_obj_t ncnn_mp_Mat_from_pixels(size_t n_args, const mp_obj_t *args) {
     }
     ncnn_mat_t mat = ncnn_mat_from_pixels((const unsigned char*)bufinfo.buf, type, w, h, stride, allocator);
     if (!mat) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to create mat from pixels");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to create mat from pixels"));
     }
     ncnn_mp_Mat_obj_t *self = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
     self->mat = mat;
@@ -423,7 +472,7 @@ static mp_obj_t ncnn_mp_Mat_from_pixels_resize(size_t n_args, const mp_obj_t *ar
     }
     ncnn_mat_t mat = ncnn_mat_from_pixels_resize((const unsigned char*)bufinfo.buf, type, w, h, stride, target_width, target_height, allocator);
     if (!mat) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to create mat from pixels resize");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to create mat from pixels resize"));
     }
     ncnn_mp_Mat_obj_t *self = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
     self->mat = mat;
@@ -449,7 +498,7 @@ static mp_obj_t ncnn_mp_Mat_from_pixels_roi(size_t n_args, const mp_obj_t *args)
     }
     ncnn_mat_t mat = ncnn_mat_from_pixels_roi((const unsigned char*)bufinfo.buf, type, w, h, stride, roix, roiy, roiw, roih, allocator);
     if (!mat) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to create mat from pixels roi");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to create mat from pixels roi"));
     }
     ncnn_mp_Mat_obj_t *self = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
     self->mat = mat;
@@ -477,7 +526,7 @@ static mp_obj_t ncnn_mp_Mat_from_pixels_roi_resize(size_t n_args, const mp_obj_t
     }
     ncnn_mat_t mat = ncnn_mat_from_pixels_roi_resize((const unsigned char*)bufinfo.buf, type, w, h, stride, roix, roiy, roiw, roih, target_width, target_height, allocator);
     if (!mat) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to create mat from pixels roi resize");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to create mat from pixels roi resize"));
     }
     ncnn_mp_Mat_obj_t *self = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
     self->mat = mat;
@@ -493,7 +542,7 @@ static mp_obj_t ncnn_mp_Mat_to_pixels(size_t n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
     int type = mp_obj_get_int(args[2]);
     int stride = mp_obj_get_int(args[3]);
-    ncnn_mat_to_pixels(self->mat, (const unsigned char*)bufinfo.buf, type, stride);
+    ncnn_mat_to_pixels(self->mat, (unsigned char*)bufinfo.buf, type, stride);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Mat_to_pixels_obj, 4, 4, ncnn_mp_Mat_to_pixels);
@@ -507,7 +556,7 @@ static mp_obj_t ncnn_mp_Mat_to_pixels_resize(size_t n_args, const mp_obj_t *args
     int target_width = mp_obj_get_int(args[3]);
     int target_height = mp_obj_get_int(args[4]);
     int target_stride = mp_obj_get_int(args[5]);
-    ncnn_mat_to_pixels_resize(self->mat, (const unsigned char*)bufinfo.buf, type, target_width, target_height, target_stride);
+    ncnn_mat_to_pixels_resize(self->mat, (unsigned char*)bufinfo.buf, type, target_width, target_height, target_stride);
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Mat_to_pixels_resize_obj, 6, 6, ncnn_mp_Mat_to_pixels_resize);
@@ -568,7 +617,7 @@ static mp_obj_t ncnn_mp_Mat_copy_make_border(size_t n_args, const mp_obj_t *pos_
     int front = args[ARG_front].u_int;
     int behind = args[ARG_behind].u_int;
     int type = args[ARG_type].u_int;
-    float v = mp_obj_get_float(args[ARG_v].u_obj);
+    float v = (float)mp_obj_get_float(args[ARG_v].u_obj);
     ncnn_option_t opt = ((ncnn_mp_Option_obj_t*)MP_OBJ_TO_PTR(args[ARG_opt].u_obj))->opt;
 
     ncnn_mp_Mat_obj_t *dst_obj = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
@@ -645,7 +694,7 @@ static mp_obj_t ncnn_mp_Mat_draw_rectangle(size_t n_args, const mp_obj_t *pos_ar
     size_t rect_len;
     mp_obj_get_array(args[ARG_rect].u_obj, &rect_len, &rect_items);
     if (rect_len != 4) {
-        mp_raise_ValueError("Rectangle must be like (x, y, w, h)");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Rectangle must be like (x, y, w, h)"));
     }
 
     int rx = mp_obj_get_int(rect_items[0]);
@@ -688,7 +737,7 @@ static mp_obj_t ncnn_mp_Mat_draw_text(size_t n_args, const mp_obj_t *pos_args, m
     size_t origin_len;
     mp_obj_get_array(args[ARG_origin].u_obj, &origin_len, &origin_items);
     if (origin_len != 2) {
-        mp_raise_ValueError("Origin must be like (x, y)");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Origin must be like (x, y)"));
     }
     int x = mp_obj_get_int(origin_items[0]);
     int y = mp_obj_get_int(origin_items[1]);
@@ -727,7 +776,7 @@ static mp_obj_t ncnn_mp_Mat_draw_circle(size_t n_args, const mp_obj_t *pos_args,
     size_t center_len;
     mp_obj_get_array(args[ARG_center].u_obj, &center_len, &center_items);
     if (center_len != 2) {
-        mp_raise_ValueError("Center Point must be like (x, y)");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Center Point must be like (x, y)"));
     }
     int cx = mp_obj_get_int(center_items[0]);
     int cy = mp_obj_get_int(center_items[1]);
@@ -768,7 +817,7 @@ static mp_obj_t ncnn_mp_Mat_draw_line(size_t n_args, const mp_obj_t *pos_args, m
     mp_obj_t *pt2_items; size_t pt2_len;
     mp_obj_get_array(args[ARG_pt2].u_obj, &pt2_len, &pt2_items);
     if (pt1_len != 2 || pt2_len != 2) {
-        mp_raise_ValueError("Point1 and Point2 must be like (x, y)");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Point1 and Point2 must be like (x, y)"));
     }
     int x0 = mp_obj_get_int(pt1_items[0]);
     int y0 = mp_obj_get_int(pt1_items[1]);
@@ -838,10 +887,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // ------------------
 /* blob api */
 // ------------------
-typedef struct _ncnn_mp_Blob_obj_t {
-    mp_obj_base_t base;
-    ncnn_blob_t blob;
-} ncnn_mp_Blob_obj_t;
 
 // Attributes
 static void ncnn_mp_Blob_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
@@ -854,7 +899,7 @@ static void ncnn_mp_Blob_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         const char* name = ncnn_blob_get_name(self->blob);
         dest[0] = mp_obj_new_str(name, strlen(name));
         #else
-        mp_raise_msg(&mp_type_AttributeError, "Accessing the 'Blob.name' attribute failed: This feature depends on the 'NCNN_STRING' option");
+        mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Accessing the 'Blob.name' attribute failed: This feature depends on the 'NCNN_STRING' option"));
         #endif
     } else if (attr == MP_QSTR_producer) {
         dest[0] = mp_obj_new_int(ncnn_blob_get_producer(self->blob));
@@ -880,10 +925,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 /* paramdict api */
 // cannot use arrtibute. all these apis need an extra id parameter
 // ------------------
-typedef struct _ncnn_mp_ParamDict_obj_t {
-    mp_obj_base_t base;
-    ncnn_paramdict_t pd;
-} ncnn_mp_ParamDict_obj_t;
 
 // Constructor
 // Usage: ParamDict()
@@ -927,7 +968,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_ParamDict_get_int_obj, ncnn_mp_ParamDic
 static mp_obj_t ncnn_mp_ParamDict_get_float(mp_obj_t self_in, mp_obj_t id_obj, mp_obj_t def_obj) {
     ncnn_mp_ParamDict_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int id = mp_obj_get_int(id_obj);
-    float def = mp_obj_get_float(def_obj);
+    float def = (float)mp_obj_get_float(def_obj);
     return mp_obj_new_float(ncnn_paramdict_get_float(self->pd, id, def));
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_ParamDict_get_float_obj, ncnn_mp_ParamDict_get_float);
@@ -961,7 +1002,7 @@ static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_ParamDict_set_int_obj, ncnn_mp_ParamDic
 static mp_obj_t ncnn_mp_ParamDict_set_float(mp_obj_t self_in, mp_obj_t id_obj, mp_obj_t f_obj) {
     ncnn_mp_ParamDict_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int id = mp_obj_get_int(id_obj);
-    float f = mp_obj_get_float(f_obj);
+    float f = (float)mp_obj_get_float(f_obj);
     ncnn_paramdict_set_float(self->pd, id, f);
     return mp_const_none;
 }
@@ -1001,10 +1042,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // ------------------
 /* datareader api */
 // ------------------
-typedef struct _ncnn_mp_DataReader_obj_t {
-    mp_obj_base_t base;
-    ncnn_datareader_t dr;
-} ncnn_mp_DataReader_obj_t;
 
 // Constructor: DataReader.__new__ and DataReader.__init__
 // Usage: DataReader(), DataReader(from_memory='...'), or DataReader(from_stdio=...)
@@ -1047,7 +1084,7 @@ static mp_obj_t ncnn_mp_DataReader_make_new(const mp_obj_type_t *type, size_t n_
     }
 
     if (!dr) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to create datareader");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to create datareader"));
     }
 
     ncnn_mp_DataReader_obj_t* self = mp_obj_malloc(ncnn_mp_DataReader_obj_t, type);
@@ -1110,10 +1147,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // ------------------
 /* modelbin api */
 // ------------------
-typedef struct _ncnn_mp_ModelBin_obj_t {
-    mp_obj_base_t base;
-    ncnn_modelbin_t mb;
-} ncnn_mp_ModelBin_obj_t;
 
 // Constructor: ModelBin.__new__ and ModelBin.__init__ (Refactored)
 // Usage: ModelBin(from_datareader=...) or ModelBin(from_mat_array=...)
@@ -1151,7 +1184,7 @@ static mp_obj_t ncnn_mp_ModelBin_make_new(const mp_obj_type_t *type, size_t n_ar
     }
 
     if (!mb) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to create modelbin");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to create modelbin"));
     }
 
     ncnn_mp_ModelBin_obj_t *self = mp_obj_malloc(ncnn_mp_ModelBin_obj_t, type);
@@ -1211,10 +1244,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // ------------------
 /* layer api */
 // ------------------
-typedef struct _ncnn_mp_Layer_obj_t {
-    mp_obj_base_t base;
-    ncnn_layer_t layer;
-} ncnn_mp_Layer_obj_t;
 
 // Constructor: Layer.__new__ and Layer.__init__
 // Usage: Layer(), Layer(type="...") or Layer(typeindex=5)
@@ -1240,7 +1269,7 @@ static mp_obj_t ncnn_mp_Layer_make_new(const mp_obj_type_t *type, size_t n_args,
         #if NCNN_STRING
         layer = ncnn_layer_create_by_type(mp_obj_str_get_str(type_obj));
         #else
-        mp_raise_msg(&mp_type_NotImplementedError, "Creating a Layer with the 'type' keyword failed: This feature depends on the 'NCNN_STRING' option. Or try using the 'typeindex' keyword.");
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Creating a Layer with the 'type' keyword failed: This feature depends on the 'NCNN_STRING' option. Or try using the 'typeindex' keyword."));
         #endif
     } else if (typeindex != -1) {
         layer = ncnn_layer_create_by_typeindex(typeindex);
@@ -1249,7 +1278,7 @@ static mp_obj_t ncnn_mp_Layer_make_new(const mp_obj_type_t *type, size_t n_args,
     }
 
     if (!layer) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to create layer");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to create layer"));
     }
 
     ncnn_mp_Layer_obj_t *self = mp_obj_malloc(ncnn_mp_Layer_obj_t, type);
@@ -1313,53 +1342,53 @@ static void ncnn_mp_Layer_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         if (attr == MP_QSTR_name) {
             #if NCNN_STRING
-            dest[0] = mp_obj_new_str(ncnn_layer_get_name(self->layer), strlen(ncnn_layer_get_name(self->layer)))
+            dest[0] = mp_obj_new_str(ncnn_layer_get_name(self->layer), strlen(ncnn_layer_get_name(self->layer)));
             #else
-            mp_raise_msg(&mp_type_AttributeError, "Accessing the 'Layer.name' attribute failed: This feature depends on the 'NCNN_STRING' option");
+            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Accessing the 'Layer.name' attribute failed: This feature depends on the 'NCNN_STRING' option"));
             #endif
         } else if (attr == MP_QSTR_typeindex) {
-            dest[0] = mp_obj_new_int(ncnn_layer_get_typeindex(self->layer))
+            dest[0] = mp_obj_new_int(ncnn_layer_get_typeindex(self->layer));
         } else if (attr == MP_QSTR_type) {
             #if NCNN_STRING
-            dest[0] = mp_obj_new_str(ncnn_layer_get_type(self->layer), strlen(ncnn_layer_get_type(self->layer)))
+            dest[0] = mp_obj_new_str(ncnn_layer_get_type(self->layer), strlen(ncnn_layer_get_type(self->layer)));
             #else
-            mp_raise_msg(&mp_type_AttributeError, "Accessing the 'Layer.type' attribute failed: This feature depends on the 'NCNN_STRING' option");
+            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Accessing the 'Layer.type' attribute failed: This feature depends on the 'NCNN_STRING' option"));
             #endif
         } else if (attr == MP_QSTR_one_blob_only) {
-            dest[0] = mp_obj_new_bool(ncnn_layer_get_one_blob_only(self->layer))
+            dest[0] = mp_obj_new_bool(ncnn_layer_get_one_blob_only(self->layer));
         } else if (attr == MP_QSTR_support_inplace) {
-            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_inplace(self->layer))
+            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_inplace(self->layer));
         } else if (attr == MP_QSTR_support_vulkan) {
-            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_vulkan(self->layer))
+            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_vulkan(self->layer));
         } else if (attr == MP_QSTR_support_packing) {
-            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_packing(self->layer))
+            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_packing(self->layer));
         } else if (attr == MP_QSTR_support_bf16_storage) {
-            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_bf16_storage(self->layer))
+            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_bf16_storage(self->layer));
         } else if (attr == MP_QSTR_support_fp16_storage) {
-            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_fp16_storage(self->layer))
+            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_fp16_storage(self->layer));
         } else if (attr == MP_QSTR_bottom_count) {
-            dest[0] = mp_obj_new_int(ncnn_layer_get_bottom_count(self->layer))
+            dest[0] = mp_obj_new_int(ncnn_layer_get_bottom_count(self->layer));
         } else if (attr == MP_QSTR_top_count) {
-            dest[0] = mp_obj_new_int(ncnn_layer_get_top_count(self->layer))
+            dest[0] = mp_obj_new_int(ncnn_layer_get_top_count(self->layer));
         }
     } else if (dest[1] != MP_OBJ_NULL) {
         if (attr == MP_QSTR_one_blob_only) {
-            ncnn_layer_set_one_blob_only(self->layer, mp_obj_is_true(dest[1]))
+            ncnn_layer_set_one_blob_only(self->layer, mp_obj_is_true(dest[1]));
             dest[0] = MP_OBJ_NULL;
         } else if (attr == MP_QSTR_support_inplace) {
-            ncnn_layer_set_support_inplace(self->layer, mp_obj_is_true(dest[1]))
+            ncnn_layer_set_support_inplace(self->layer, mp_obj_is_true(dest[1]));
             dest[0] = MP_OBJ_NULL;
         } else if (attr == MP_QSTR_support_vulkan) {
-            ncnn_layer_set_support_vulkan(self->layer, mp_obj_is_true(dest[1]))
+            ncnn_layer_set_support_vulkan(self->layer, mp_obj_is_true(dest[1]));
             dest[0] = MP_OBJ_NULL;
         } else if (attr == MP_QSTR_support_packing) {
-            ncnn_layer_set_support_packing(self->layer, mp_obj_is_true(dest[1]))
+            ncnn_layer_set_support_packing(self->layer, mp_obj_is_true(dest[1]));
             dest[0] = MP_OBJ_NULL;
         } else if (attr == MP_QSTR_support_bf16_storage) {
-            ncnn_layer_set_support_bf16_storage(self->layer, mp_obj_is_true(dest[1]))
+            ncnn_layer_set_support_bf16_storage(self->layer, mp_obj_is_true(dest[1]));
             dest[0] = MP_OBJ_NULL;
         } else if (attr == MP_QSTR_support_fp16_storage) {
-            ncnn_layer_set_support_fp16_storage(self->layer, mp_obj_is_true(dest[1]))
+            ncnn_layer_set_support_fp16_storage(self->layer, mp_obj_is_true(dest[1]));
             dest[0] = MP_OBJ_NULL;
         }
     }
@@ -1500,10 +1529,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // ------------------
 /* net api */
 // ------------------
-typedef struct _ncnn_mp_Net_obj_t {
-    mp_obj_base_t base;
-    ncnn_net_t net;
-} ncnn_mp_Net_obj_t;
 
 // Constructor: Net.__new__ and Net.__init__
 // Usage: Net()
@@ -1570,7 +1595,7 @@ static mp_obj_t ncnn_mp_Net_register_custom_layer(size_t n_args, const mp_obj_t 
         const char* type = mp_obj_str_get_str(args[1]);
         ncnn_net_register_custom_layer_by_type(self->net, type, creator, destroyer, userdata);
         #else
-        mp_raise_msg(&mp_type_NotImplementedError, "Net.register_custom_layer failed: Register by 'type' requires NCNN_STRING=ON");
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Net.register_custom_layer failed: Register by 'type' requires NCNN_STRING=ON"));
         #endif
     } else {
         int typeindex = mp_obj_get_int(args[1]);
@@ -1582,28 +1607,28 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Net_register_custom_layer_obj
 
 // Net.load_param()
 static mp_obj_t ncnn_mp_Net_load_param(mp_obj_t self_in, mp_obj_t source_obj) {
+    #if NCNN_STRING
     ncnn_mp_Net_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int result = -1;
-    #if NCNN_STRING
     if (mp_obj_is_str(source_obj)) {
         #if NCNN_STDIO
         result = ncnn_net_load_param(self->net, mp_obj_str_get_str(source_obj));
         #else
-        mp_raise_msg(&mp_type_NotImplementedError, "Net.load_param failed: load_param from file path requires NCNN_STDIO");
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Net.load_param failed: load_param from file path requires NCNN_STDIO"));
         #endif
     } else if (mp_obj_is_type(source_obj, &ncnn_mp_type_DataReader)) {
         ncnn_datareader_t dr = ((ncnn_mp_DataReader_obj_t*)MP_OBJ_TO_PTR(source_obj))->dr;
         result = ncnn_net_load_param_datareader(self->net, dr);
     } else {
-        mp_raise_msg(&mp_type_TypeError, "Net.load_param failed: load_param source must be a path string or DataReader");
+        mp_raise_msg(&mp_type_TypeError, MP_ERROR_TEXT("Net.load_param failed: load_param source must be a path string or DataReader"));
     }
 
     // This return value is a kind of status code. TODO
     if (result != 0) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to load param");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to load param"));
     }
     #else
-        mp_raise_msg(&mp_type_NotImplementedError, "Net.load_param failed: load_param requires NCNN_STRING=ON. Or try using 'Net.load_param_bin()'.");
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Net.load_param failed: load_param requires NCNN_STRING=ON. Or try using 'Net.load_param_bin()'."));
     #endif
 
     return mp_const_none;
@@ -1620,7 +1645,7 @@ static mp_obj_t ncnn_mp_Net_load_param_bin(mp_obj_t self_in, mp_obj_t source_obj
         const char* path = mp_obj_str_get_str(source_obj);
         result = ncnn_net_load_param_bin(self->net, path);
         #else
-        mp_raise_msg(&mp_type_NotImplementedError, "Net.load_param_bin failed: load_param_bin from file path requires NCNN_STDIO");
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Net.load_param_bin failed: load_param_bin from file path requires NCNN_STDIO"));
         #endif
     } else if (mp_obj_is_type(source_obj, &ncnn_mp_type_DataReader)) {
         ncnn_datareader_t dr = ((ncnn_mp_DataReader_obj_t*)MP_OBJ_TO_PTR(source_obj))->dr;
@@ -1632,7 +1657,7 @@ static mp_obj_t ncnn_mp_Net_load_param_bin(mp_obj_t self_in, mp_obj_t source_obj
     }
     
     if (result != 0) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to load param_bin");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to load param_bin"));
     }
     return mp_const_none;
 }
@@ -1648,7 +1673,7 @@ static mp_obj_t ncnn_mp_Net_load_model(mp_obj_t self_in, mp_obj_t source_obj) {
         const char* path = mp_obj_str_get_str(source_obj);
         result = ncnn_net_load_model(self->net, path);
         #else
-        mp_raise_msg(&mp_type_NotImplementedError, "Net.load_model failed: load_model from file path requires NCNN_STDIO");
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Net.load_model failed: load_model from file path requires NCNN_STDIO"));
         #endif
     } else if (mp_obj_is_type(source_obj, &ncnn_mp_type_DataReader)) {
         ncnn_datareader_t dr = ((ncnn_mp_DataReader_obj_t*)MP_OBJ_TO_PTR(source_obj))->dr;
@@ -1660,7 +1685,7 @@ static mp_obj_t ncnn_mp_Net_load_model(mp_obj_t self_in, mp_obj_t source_obj) {
     }
     
     if (result != 0) {
-        mp_raise_msg(&mp_type_ValueError, "Failed to load model");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to load model"));
     }
     return mp_const_none;
 }
@@ -1713,12 +1738,12 @@ static mp_obj_t ncnn_mp_Net_get_output_index(mp_obj_t self_in, mp_obj_t i_obj) {
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_Net_get_output_index_obj, ncnn_mp_Net_get_output_index);
 
 // Net.create_extractor()
-// extern const mp_obj_type_t ncnn_mp_type_Extractor;
+extern const mp_obj_type_t ncnn_mp_type_Extractor;
 static mp_obj_t ncnn_mp_Net_create_extractor(mp_obj_t self_in) {
     ncnn_mp_Net_obj_t *self = MP_OBJ_TO_PTR(self_in);
     ncnn_extractor_t ex = ncnn_extractor_create(self->net);
     if (!ex) {
-        mp_raise_msg(&mp_type_RuntimeError, "Failed to create extractor");
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Failed to create extractor"));
     }
     ncnn_mp_Extractor_obj_t *ex_obj = mp_obj_malloc(ncnn_mp_Extractor_obj_t, &ncnn_mp_type_Extractor);
     ex_obj->ex = ex;
@@ -1738,8 +1763,8 @@ static const mp_rom_map_elem_t ncnn_mp_Net_locals_dict_table[] = {
     #if NCNN_STRING
     { MP_ROM_QSTR(MP_QSTR_get_input_name), MP_ROM_PTR(&ncnn_mp_Net_get_input_name_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_output_name), MP_ROM_PTR(&ncnn_mp_Net_get_output_name_obj) },
-    { MP_ROM_QSTR(MP_QSTR_register_custom_layer), MP_ROM_PTR(&ncnn_mp_Net_register_custom_layer_obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_register_custom_layer), MP_ROM_PTR(&ncnn_mp_Net_register_custom_layer_obj) },
     #if NCNN_VULKAN
     { MP_ROM_QSTR(MP_QSTR_set_vulkan_device), MP_ROM_PTR(&ncnn_mp_Net_set_vulkan_device_obj) },
     #endif
@@ -1759,10 +1784,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 // ------------------
 /* extractor api */
 // ------------------
-typedef struct _ncnn_mp_Extractor_obj_t {
-    mp_obj_base_t base;
-    ncnn_extractor_t ex;
-} ncnn_mp_Extractor_obj_t;
 
 // No Constructor for extractor. This object is created by Net.create_extractor()
 
@@ -1795,13 +1816,13 @@ static mp_obj_t ncnn_mp_Extractor_input(mp_obj_t self_in, mp_obj_t id_obj, mp_ob
         #if NCNN_STRING
         result = ncnn_extractor_input(self->ex, mp_obj_str_get_str(id_obj), mat);
         #else
-        mp_raise_msg(&mp_type_NotImplementedError, "Extractor.input failed: Inputting by name requires NCNN_STRING");
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Extractor.input failed: Inputting by name requires NCNN_STRING"));
         #endif
     } else {
         result = ncnn_extractor_input_index(self->ex, mp_obj_get_int(id_obj), mat);
     }
     if (result != 0) {
-        mp_raise_msg(&mp_type_ValueError, "Extractor.input failed: invalid input name or index");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Extractor.input failed: invalid input name or index"));
     }
     return mp_obj_new_int(result);
 }
@@ -1816,13 +1837,13 @@ static mp_obj_t ncnn_mp_Extractor_extract(mp_obj_t self_in, mp_obj_t id_obj) {
         #if NCNN_STRING
         result = ncnn_extractor_extract(self->ex, mp_obj_str_get_str(id_obj), &mat);
         #else
-        mp_raise_msg(&mp_type_NotImplementedError, "Extractor.extract failed: Extracting by name requires NCNN_STRING");
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Extractor.extract failed: Extracting by name requires NCNN_STRING"));
         #endif
     } else {
         result = ncnn_extractor_extract_index(self->ex, mp_obj_get_int(id_obj), &mat);
     }
     if (result != 0) {
-        mp_raise_msg(&mp_type_ValueError, "Extractor.extract failed: invalid input name or index");
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Extractor.extract failed: invalid input name or index"));
     }
     ncnn_mp_Mat_obj_t *mat_obj = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
     mat_obj->mat = mat;
@@ -1850,11 +1871,11 @@ MP_DEFINE_CONST_OBJ_TYPE(
 /* Utility functions */
 // ------------------
 // ncnn_mp.convert_packing()
-static mp_obj_t ncnn_mp_convert_packing(mp_obj_t src_obj, mp_obj_t dst_obj, mp_obj_t elempack_obj, mp_obj_t opt_obj) {
-    ncnn_mat_t src = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(src_obj))->mat;
-    ncnn_mat_t dst = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(dst_obj))->mat;
-    int elempack = mp_obj_get_int(elempack_obj);
-    ncnn_option_t opt = ((ncnn_mp_Option_obj_t*)MP_OBJ_TO_PTR(opt_obj))->opt;
+static mp_obj_t ncnn_mp_convert_packing(size_t n_args, const mp_obj_t *args) {
+    ncnn_mat_t src = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(args[0]))->mat;
+    ncnn_mat_t dst = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(args[1]))->mat;
+    int elempack = mp_obj_get_int(args[2]);
+    ncnn_option_t opt = ((ncnn_mp_Option_obj_t*)MP_OBJ_TO_PTR(args[3]))->opt;
     ncnn_convert_packing(src, &dst, elempack, opt);
     return mp_const_none;
 }
