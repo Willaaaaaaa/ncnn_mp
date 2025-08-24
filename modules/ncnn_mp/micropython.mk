@@ -14,9 +14,7 @@ CFLAGS_USERMOD += -Wno-unused-function
 LDFLAGS_USERMOD += -L$(NCNN_INSTALL_PREFIX)/lib
 
 ifeq ($(USE_VULKAN), 1)
-    CFLAGS_USERMOD += -DNCNN_VULKAN=ON
-    LDFLAGS_USERMOD += -lncnn -lglslang -lSPIRV -lOSDependent -lGenericCodeGen -lMachineIndependent -lglslang-default-resource-limits -lvulkan
-else
+    LDFLAGS_USERMOD += -lncnn -lglslang
     LDFLAGS_USERMOD += -lncnn
 endif
 
