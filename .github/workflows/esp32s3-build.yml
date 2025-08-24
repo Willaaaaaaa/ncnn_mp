@@ -1,0 +1,76 @@
+name: esp32-s3
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-esp32s3:
+    name: Build for esp32-s3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Checkout esp-idf repo
+        uses: actions/checkout@v4
+        with:
+          repository: espressif/esp-idf
+          path: esp-idf
+          ref: v5.4.2
+          submodules: 'recursive'
+
+      - name: Set up esp-idf
+      - run: |
+          cd esp-idf
+          ./install.sh esp32s3
+
+      - name: Get ncnn commit hash
+        id: get_ncnn_hash
+        run: echo "hash=$(git rev-parse HEAD:ncnn)" >> $GITHUB_OUTPUT
+      - name: Cache cross-compiled ncnn library
+        id: cache-ncnn
+        uses: actions/cache@v4
+        with:
+          path: ncnn/build-esp32s3/install
+          key: ${{ runner.os }}-ncnn-esp32s3-${{ steps.get_ncnn_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-ncnn-esp32s3-
+
+      - name: Get micropython commit hash
+        id: get_mpy_hash
+        run: echo "hash=$(git rev-parse HEAD:micropython)" >> $GITHUB_OUTPUT
+      - name: Cache mpy-cross compiler
+        id: cache-mpy-cross
+        uses: actions/cache@v4
+        with:
+          path: micropython/mpy-cross/build
+          key: ${{ runner.os }}-mpy-cross-${{ steps.get_mpy_hash.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-mpy-cross-
+
+      - name: Build ncnn for esp32-s3
+        if: steps.cache-ncnn.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          source esp-idf/export-idf.sh
+          cd ncnn
+          mkdir build-esp32s3 && cd build-esp32s3
+          cmake -DCMAKE_TOOLCHAIN_FILE=../../toolchains/esp32s3.toolchain.cmake -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_STRING=OFF -DNCNN_STDIO=OFF -DNCNN_BF16=OFF -DNCNN_DISABLE_RTTI=ON -DNCNN_DISABLE_EXCEPTION=ON -DNCNN_DISABLE_PIC=ON -DNCNN_PIXEL_DRAWING=OFF -DWITH_LAYER_convolution3d=OFF -DWITH_LAYER_pooling3d=OFF -DWITH_LAYER_deconvolution3d=OFF -DWITH_LAYER_convolutiondepthwise3d=OFF -DWITH_LAYER_deconvolutiondepthwise3d=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
+          make -j$(nproc)
+          make install
+
+      - name: Build MicroPython for esp32-s3
+        shell: bash
+        run: |
+          source esp-idf/export.sh
+          cd micropython/ports/esp32
+          if [ "${{ steps.cache-mpy-cross.outputs.cache-hit }}" != "true" ]; then
+            make -C ../../mpy-cross -j$(nproc)
+          fi
+          make submodules BOARD=ESP32_GENERIC_S3 -j$(nproc)
+          idf.py -D MICROPY_BOARD=ESP32_GENERIC_S3 -D USER_C_MODULES=../../../../modules/ncnn_mp/micropython.cmake -D NCNN_INSTALL_PREFIX=../../../../ncnn/build-esp32s3/install build
