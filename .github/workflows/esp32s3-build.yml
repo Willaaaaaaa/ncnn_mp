@@ -1,4 +1,4 @@
-name: esp32-s3
+name: ESP32-S3
 
 on:
   push:
