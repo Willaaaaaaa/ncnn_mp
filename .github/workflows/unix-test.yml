@@ -3,8 +3,16 @@ name: Unix
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'examples/**'
+      - 'modules/**'
+      - '.github/workflows/unix-test.yml'
   pull_request:
     branches: [ master ]
+    paths:
+      - 'examples/**'
+      - 'modules/**'
+      - '.github/workflows/unix-test.yml'
 
 jobs:
   build-and-test-unix:

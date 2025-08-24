@@ -3,8 +3,18 @@ name: ESP32-S3
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'examples/**'
+      - 'modules/**'
+      - 'toolchains/esp32s3.toolchain.cmake'
+      - '.github/workflows/esp32s3-build.yml'
   pull_request:
     branches: [ master ]
+    paths:
+      - 'examples/**'
+      - 'modules/**'
+      - 'toolchains/esp32s3.toolchain.cmake'
+      - '.github/workflows/esp32s3-build.yml'
 
 jobs:
   build-esp32s3:
