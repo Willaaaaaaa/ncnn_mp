@@ -2,10 +2,9 @@
 # It is used to test the object-oriented ncnn_mp MicroPython bindings.
 
 import ncnn_mp
-from ncnn_mp import Mat
 import struct
 
-print(f'Testing MicroPython bindings for ncnn c apis.\nCurrent ncnn version is {ncnn_mp.version()}.')
+print(f'Testing MicroPython bindings for ncnn c apis.\nCurrent ncnn version is {ncnn_mp.version()}.\n')
 
 def test_binary_op():
     """
@@ -29,7 +28,7 @@ def test_binary_op():
     op.load_param(pd)
 
     # Load an empty model
-    mb = ncnn_mp.ModelBin([0, 0])
+    mb = ncnn_mp.ModelBin()
     op.load_model(mb)
 
     op.create_pipeline(opt)
@@ -47,7 +46,7 @@ def test_binary_op():
         c_data_bytes = c.to_bytes()
         c_data_floats = struct.unpack(f'{w}f', c_data_bytes)
         
-        print(f"Result dims={dims}, w={w}, data={c_data_floats}")
+        print(f"test_binary_op:\nResult dims={dims}, w={w}, data={c_data_floats}\n")
         
         success = (dims == 1 and w == 2 and c_data_floats[0] == 5.0 and c_data_floats[1] == 5.0)
 
@@ -77,7 +76,7 @@ def test_reorg_layer():
     pd = ncnn_mp.ParamDict()
     pd.set_int(0, 2)  # stride = 2
     op.load_param(pd)
-    mb = ncnn_mp.ModelBin([0, 0])
+    mb = ncnn_mp.ModelBin()
     op.load_model(mb)
 
     op.create_pipeline(opt)
@@ -90,7 +89,7 @@ def test_reorg_layer():
     success = False
     if c:
         # This time we use object attributes directly
-        print(f"Result dims={c.dims}, w={c.w}, h={c.h}, c={c.c}")
+        print(f"test_reorg_layer:\nResult dims={c.dims}, w={c.w}, h={c.h}, c={c.c}\n")
         success = (c.dims == 3 and c.w == 2 and c.h == 1 and c.c == 12)
         
         expected = [
@@ -100,8 +99,7 @@ def test_reorg_layer():
         ]
         expected_bytes = struct.pack(f'{len(expected)}f', *expected)
         
-        c2 = ncnn_mp.Mat()
-        ncnn_mp.flatten(c, c2, opt)
+        c2 = c.flatten(opt)
         
         if c2.to_bytes() != expected_bytes:
             success = False
@@ -113,7 +111,7 @@ if __name__ == "__main__":
     result1 = test_binary_op()
     result2 = test_reorg_layer()
     
-    print("\n--- TEST SUMMARY ---")
+    print("--- TEST SUMMARY ---")
     print(f"test_binary_op:   {'PASSED' if result1 else 'FAILED'}")
     print(f"test_reorg_layer: {'PASSED' if result2 else 'FAILED'}")
 
