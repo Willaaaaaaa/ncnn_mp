@@ -31,6 +31,8 @@ make USER_C_MODULES=../../../modules USE_VULKAN=1 -j4
 ./build-standard/micropython ../../../examples/main.py
 ```
 
+> 如果你需要进行 debug ，请将 `CMAKE_BUILD_TYPE` 改为 `DEBUG` ，并使用 `make USER_C_MODULES=../../../modules USE_VULKAN=1 NCNN_INSTALL_PREFIX=../../../ncnn/build-debug/install DEBUG=1 -j4` 这条命令。
+
 ### esp32-s3: 使用 CMake
 
 这里应该是交叉编译，以 Linux 操作系统为例：
