@@ -41,6 +41,8 @@ typedef struct _ncnn_mp_ParamDict_obj_t {
 typedef struct _ncnn_mp_DataReader_obj_t {
     mp_obj_base_t base;
     ncnn_datareader_t dr;
+    mp_obj_t from_memory_obj;
+    const unsigned char* mem_ptr;
 } ncnn_mp_DataReader_obj_t;
 
 typedef struct _ncnn_mp_ModelBin_obj_t {
@@ -1122,35 +1124,37 @@ static mp_obj_t ncnn_mp_DataReader_make_new(const mp_obj_type_t *type, size_t n_
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_arg_parse_all(0, NULL, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, parsed_args);
-
-    ncnn_datareader_t dr = NULL;
     mp_obj_t from_memory_obj = parsed_args[ARG_from_memory].u_obj;
     #if NCNN_STDIO
     mp_obj_t from_stdio_obj = parsed_args[ARG_from_stdio].u_obj;
     #endif
 
+    ncnn_mp_DataReader_obj_t* self = mp_obj_malloc(ncnn_mp_DataReader_obj_t, type);
+    self->from_memory_obj = mp_const_none;
+    self->mem_ptr = NULL;
+    self->dr = NULL;
+
     if (from_memory_obj != mp_const_none) {
+        self->from_memory_obj = from_memory_obj;
         mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(from_memory_obj, &bufinfo, MP_BUFFER_READ);
-        const unsigned char* mem_ptr = (const unsigned char*)bufinfo.buf;
-        dr = ncnn_datareader_create_from_memory(&mem_ptr);
-    } 
+        mp_get_buffer_raise(self->from_memory_obj, &bufinfo, MP_BUFFER_READ);
+        self->mem_ptr = (const unsigned char*)bufinfo.buf;
+        self->dr = ncnn_datareader_create_from_memory(&self->mem_ptr);
+    }
     #if NCNN_STDIO
     else if (from_stdio_obj != mp_const_none) {
         FILE* fp = (FILE*)mp_obj_get_int(from_stdio_obj);
-        dr = ncnn_datareader_create_from_stdio(fp);
+        self->dr = ncnn_datareader_create_from_stdio(fp);
     }
     #endif
     else {
-        dr = ncnn_datareader_create();
+        self->dr = ncnn_datareader_create();
     }
 
-    if (!dr) {
+    if (!self->dr) {
         mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to create datareader"));
     }
 
-    ncnn_mp_DataReader_obj_t* self = mp_obj_malloc(ncnn_mp_DataReader_obj_t, type);
-    self->dr = dr;
     return MP_OBJ_FROM_PTR(self);
 }
 
