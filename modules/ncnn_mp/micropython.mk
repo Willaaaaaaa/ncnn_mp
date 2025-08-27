@@ -1,6 +1,5 @@
 NCNN_MP_MOD_DIR := $(USERMOD_DIR)
-NCNN_DIR := $(NCNN_MP_MOD_DIR)/../../ncnn
-NCNN_INSTALL_PREFIX := $(NCNN_DIR)/build/install
+NCNN_INSTALL_PREFIX ?= $(NCNN_MP_MOD_DIR)/../../ncnn/build/install
 
 SRC_USERMOD_C += $(NCNN_MP_MOD_DIR)/ncnn_mp.c
 
@@ -13,9 +12,16 @@ CFLAGS_USERMOD += -Wno-unused-function
 # Linker flags
 LDFLAGS_USERMOD += -L$(NCNN_INSTALL_PREFIX)/lib
 
+ifeq ($(DEBUG), 1)
+    NCNN_LIB_NAME := ncnnd
+else
+    NCNN_LIB_NAME := ncnn
+endif
+
 ifeq ($(USE_VULKAN), 1)
-    LDFLAGS_USERMOD += -lncnn -lglslang
-    LDFLAGS_USERMOD += -lncnn
+    LDFLAGS_USERMOD += -l$(NCNN_LIB_NAME) -lglslang
+else
+    LDFLAGS_USERMOD += -l$(NCNN_LIB_NAME)
 endif
 
 LDFLAGS_USERMOD += -lstdc++
