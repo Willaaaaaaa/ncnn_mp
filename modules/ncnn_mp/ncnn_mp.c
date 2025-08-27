@@ -1670,6 +1670,7 @@ static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_Net_set_vulkan_device_obj, ncnn_mp_Net_
 #endif // NCNN_VULKAN
 
 // Net.register_custom_layer()
+// TODO
 static mp_obj_t ncnn_mp_Net_register_custom_layer(size_t n_args, const mp_obj_t *args) {
     ncnn_mp_Net_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     ncnn_layer_creator_t creator = (ncnn_layer_creator_t)mp_obj_get_int(args[2]);

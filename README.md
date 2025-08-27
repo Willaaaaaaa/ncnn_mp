@@ -18,7 +18,8 @@ MicroPython 针对不同的端口可能需要不同的构建工具，以下列�
 1. ncnn
 ```bash
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_SIMPLESTL=OFF -DNCNN_VULKAN=ON -DNCNN_BUILD_BENCHMARK=ON -DNCNN_BUILD_TESTS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
+# Example: a relatively feature-rich configuration
+cmake -DCMAKE_BUILD_TYPE=Release -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_VULKAN=ON -DNCNN_BUILD_BENCHMARK=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
 make -j4
 make install
 ```
@@ -54,7 +55,8 @@ source export.sh
 ```bash
 cd ncnn
 mkdir build-esp32s3 && cd build-esp32s3
-cmake -DCMAKE_TOOLCHAIN_FILE=../../toolchains/esp32s3.toolchain.cmake -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_STRING=OFF -DNCNN_STDIO=OFF -DNCNN_BF16=OFF -DNCNN_DISABLE_RTTI=ON -DNCNN_DISABLE_EXCEPTION=ON -DNCNN_DISABLE_PIC=ON -DNCNN_PIXEL_DRAWING=OFF -DWITH_LAYER_convolution3d=OFF -DWITH_LAYER_pooling3d=OFF -DWITH_LAYER_deconvolution3d=OFF -DWITH_LAYER_convolutiondepthwise3d=OFF -DWITH_LAYER_deconvolutiondepthwise3d=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
+# You should add configs here to minimize your ncnn lib
+cmake -DCMAKE_TOOLCHAIN_FILE=../../toolchains/esp32s3.toolchain.cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
 make -j4
 make install
 ```
