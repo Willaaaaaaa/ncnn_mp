@@ -658,7 +658,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(ncnn_mp_Mat_to_bytes_obj, ncnn_mp_Mat_to_bytes)
 
 // Mat.copy_make_border()
 static mp_obj_t ncnn_mp_Mat_copy_make_border(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_obj_t src_obj = pos_args[1];
+    mp_obj_t self_obj = pos_args[0];
 
     enum { ARG_top, ARG_bottom, ARG_left, ARG_right, ARG_front, ARG_behind, ARG_type, ARG_v, ARG_opt };
     static const mp_arg_t allowed_args[] = {
@@ -674,9 +674,9 @@ static mp_obj_t ncnn_mp_Mat_copy_make_border(size_t n_args, const mp_obj_t *pos_
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ncnn_mat_t src = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(src_obj))->mat;
+    ncnn_mat_t src = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(self_obj))->mat;
     int top = args[ARG_top].u_int;
     int bottom = args[ARG_bottom].u_int;
     int left = args[ARG_left].u_int;
@@ -698,11 +698,11 @@ static mp_obj_t ncnn_mp_Mat_copy_make_border(size_t n_args, const mp_obj_t *pos_
 
     return MP_OBJ_FROM_PTR(dst_obj);
 }
-static MP_DEFINE_CONST_FUN_OBJ_KW(ncnn_mp_Mat_copy_make_border_obj, 2, ncnn_mp_Mat_copy_make_border);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ncnn_mp_Mat_copy_make_border_obj, 1, ncnn_mp_Mat_copy_make_border);
 
 // Mat.copy_cut_border()
 static mp_obj_t ncnn_mp_Mat_copy_cut_border(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_obj_t src_obj = pos_args[1];
+    mp_obj_t self_obj = pos_args[0];
 
     enum { ARG_top, ARG_bottom, ARG_left, ARG_right, ARG_front, ARG_behind, ARG_opt };
     static const mp_arg_t allowed_args[] = {
@@ -716,9 +716,9 @@ static mp_obj_t ncnn_mp_Mat_copy_cut_border(size_t n_args, const mp_obj_t *pos_a
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ncnn_mat_t src = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(src_obj))->mat;
+    ncnn_mat_t src = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(self_obj))->mat;
     int top = args[ARG_top].u_int;
     int bottom = args[ARG_bottom].u_int;
     int left = args[ARG_left].u_int;
@@ -738,7 +738,7 @@ static mp_obj_t ncnn_mp_Mat_copy_cut_border(size_t n_args, const mp_obj_t *pos_a
 
     return MP_OBJ_FROM_PTR(dst_obj);
 }
-static MP_DEFINE_CONST_FUN_OBJ_KW(ncnn_mp_Mat_copy_cut_border_obj, 2, ncnn_mp_Mat_copy_cut_border);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ncnn_mp_Mat_copy_cut_border_obj, 1, ncnn_mp_Mat_copy_cut_border);
 
 // ------------------------
 /* mat pixel drawing api*/
