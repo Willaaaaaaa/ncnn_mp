@@ -633,6 +633,33 @@ static mp_obj_t ncnn_mp_Mat_substract_mean_normalize(mp_obj_t self_in, mp_obj_t 
 }
 static MP_DEFINE_CONST_FUN_OBJ_3(ncnn_mp_Mat_substract_mean_normalize_obj, ncnn_mp_Mat_substract_mean_normalize);
 
+// Mat.from_bytes()
+static mp_obj_t ncnn_mp_Mat_from_bytes(mp_obj_t self_in, mp_obj_t data_obj) {
+    ncnn_mp_Mat_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_buffer_info_t src_bufinfo;
+    mp_get_buffer_raise(data_obj, &src_bufinfo, MP_BUFFER_READ);
+
+    void* dest_ptr = ncnn_mat_get_data(self->mat);
+    if (dest_ptr == NULL) {
+        mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("Mat.from_bytes failed: Cannot write to an empty Mat"));
+    }
+
+    int c = ncnn_mat_get_c(self->mat);
+    size_t cstep = ncnn_mat_get_cstep(self->mat);
+    size_t elemsize = ncnn_mat_get_elemsize(self->mat);
+    size_t total_dest_size = c * cstep * elemsize;
+
+    if (src_bufinfo.len != total_dest_size) {
+        mp_raise_msg_varg(&mp_type_ValueError,  
+            MP_ERROR_TEXT("Mat.from_bytes failed: Source buffer size (%d) does not match Mat's data size (%d)"),   
+            src_bufinfo.len, total_dest_size);
+    }
+    memcpy(dest_ptr, src_bufinfo.buf, total_dest_size);
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_Mat_from_bytes_obj, ncnn_mp_Mat_from_bytes);
+
 // Mat.to_bytes()
 static mp_obj_t ncnn_mp_Mat_to_bytes(mp_obj_t self_in) {
     ncnn_mp_Mat_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -918,6 +945,7 @@ static const mp_rom_map_elem_t ncnn_mp_Mat_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_convert_packing), MP_ROM_PTR(&ncnn_mp_Mat_convert_packing_obj) },
     { MP_ROM_QSTR(MP_QSTR_substract_mean_normalize), MP_ROM_PTR(&ncnn_mp_Mat_substract_mean_normalize_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_channel_data), MP_ROM_PTR(&ncnn_mp_Mat_get_channel_data_obj) },
+    { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&ncnn_mp_Mat_from_bytes_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_bytes), MP_ROM_PTR(&ncnn_mp_Mat_to_bytes_obj) },
 #if NCNN_PIXEL
     { MP_ROM_QSTR(MP_QSTR_to_pixels), MP_ROM_PTR(&ncnn_mp_Mat_to_pixels_obj) },

@@ -161,17 +161,108 @@ def test_net_extractor():
     
     return success
 
+'''
+TODO
+class MyLayer(ncnn_mp.Layer):
+    def __init__(self):
+        super().__init__() 
+        self.one_blob_only = True
+        self.support_inplace = True
+    
+    def forward_inplace(self, bottom_top_blob, opt):
+        data_bytes = bottom_top_blob.to_bytes()
+        num_elements = len(data_bytes) // 4
+        data_floats = list(struct.unpack(f'{num_elements}f', data_bytes))
+
+        for i in range(num_elements):
+            data_floats[i] += 100.0
+
+        new_data_bytes = struct.pack(f'{num_elements}f', *data_floats)
+        bottom_top_blob.from_bytes(new_data_bytes)
+        
+        return 0
+
+def test_custom_layer():
+    """
+    Tests custom layer registration and execution, and custom allocators.
+    """
+    success = False
+    try:
+        blob_allocator = ncnn_mp.Allocator()  # Allocator
+        workspace_allocator = ncnn_mp.Allocator(unlocked=True)  # Unlocked Allocator
+        
+        opt = ncnn_mp.Option()
+        opt.num_threads = 1
+        opt.set_blob_allocator(blob_allocator)
+        opt.set_workspace_allocator(workspace_allocator)
+
+        # Create and configure the network
+        net = ncnn_mp.Net()
+        net.option = opt
+        
+        # Register the Python class as a custom layer
+        net.register_custom_layer("MyLayer", MyLayer)
+
+        # Define a network that uses our custom layer
+        param_str = "7767517\n2 2\nInput input 0 1 data\nMyLayer mylayer 1 1 data output\0"
+        param_dr = ncnn_mp.DataReader(from_memory=param_str)
+        net.load_param(param_dr)
+        # No model file is needed
+
+        # Prepare input data
+        data = [
+            0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0,
+            10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0,
+            20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0
+        ]
+        data_bytes = struct.pack(f'{len(data)}f', *data)
+        a = ncnn_mp.Mat(w=24, data=data_bytes, elemsize=4, allocator=blob_allocator)
+        b = a.reshape(4, 2, 3, blob_allocator)
+
+        # Run inference
+        ex = net.create_extractor()
+        ex.input("data", b)
+        c = ex.extract("output")
+        print("111111111111111111111111111111111111111")
+
+        # Check the result
+        if c:
+            print(f"test_custom_layer:\nResult dims={c.dims}, w={c.w}, h={c.h}, c={c.c}\n")
+            if not (c.dims == 3 and c.w == 4 and c.h == 2 and c.c == 3):
+                return False
+
+            expected = [
+                100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0,
+                110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0,
+                120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0
+            ]
+            expected_bytes = struct.pack(f'{len(expected)}f', *expected)
+
+            c2 = c.flatten(opt)
+            if c2.to_bytes() == expected_bytes:
+                success = True
+
+    except Exception as e:
+        print(f"An error occurred in test_custom_layer: {e}")
+        success = False
+
+    return success
+'''
+
 if __name__ == "__main__":
     result1 = test_binary_op()
     result2 = test_reorg_layer()
     result3 = test_net_extractor()
+    # result4 = test_custom_layer()
     
     print("--- TEST SUMMARY ---")
     print(f"test_binary_op:     {'PASSED' if result1 else 'FAILED'}")
     print(f"test_reorg_layer:   {'PASSED' if result2 else 'FAILED'}")
     print(f"test_net_extractor: {'PASSED' if result3 else 'FAILED'}")
+    # print(f"test_custom_layer:  {'PASSED' if result4 else 'FAILED'}")
 
     if result1 and result2 and result3:
+    # if result1 and result2 and result3 and result4:
         print("\nAll tests passed!")
     else:
         print("\nSome tests failed.")
