@@ -269,8 +269,22 @@ class Mat:
         """
         ...
     
+    def from_bytes(self, data: Any) -> None:
+        """
+        Fill the Mat's data from a bytes-like object in-place.
+        The size of the source buffer must exactly match the total size of the Mat's data.
+        This method modifies the current Mat.
+        Args:
+            data (Any): The source buffer to copy data from (e.g., bytes, bytearray).
+        """
+        ...
+
     def to_bytes(self) -> bytes:
-        """Convert the Mat data to a contiguous bytes object."""
+        """
+        Convert the Mat data to a contiguous bytes object.
+        Returns:
+            (bytes): A bytes object containing a snapshot of the Mat's data.
+        """
         ...
     
     def copy_make_border(self, top: int, bottom: int, left: int, right: int, type: int, v: float, opt: Option, *, front: int = -1, behind: int = -1) -> Self:
