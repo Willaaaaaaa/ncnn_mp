@@ -4,15 +4,17 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'examples/**'
+      - 'examples/test_api.py'
       - 'modules/**'
+      - '!modules/stub/ncnn_mp.pyi'
       - 'toolchains/esp32s3.toolchain.cmake'
       - '.github/workflows/esp32s3-build.yml'
   pull_request:
     branches: [ master ]
     paths:
-      - 'examples/**'
+      - 'examples/test_api.py'
       - 'modules/**'
+      - '!modules/stub/ncnn_mp.pyi'
       - 'toolchains/esp32s3.toolchain.cmake'
       - '.github/workflows/esp32s3-build.yml'
 

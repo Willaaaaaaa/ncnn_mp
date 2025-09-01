@@ -1,29 +1,49 @@
-# ncnn-mp
+# ncnn_mp
 
-**ncnn-mp** 是一个在 Micropython 平台上使用 [ncnn](https://github.com/Tencent/ncnn) 的扩展模块，提供了 **ncnn C API** 的绑定，让你在嵌入式设备（如 ESP32、STM32 等）上直接运行 ncnn 推理。
+[中文](./README_zh.md)
 
-## 特性
-- 基于 **ncnn C API**，轻量封装，方便移植。
-- 可在支持 Micropython 的平台直接调用 ncnn 推理。
+**ncnn_mp** is an external C module for MicroPython that brings Tencent's [ncnn](https://github.com/Tencent/ncnn) high-performance neural network inference framework to resource-constrained microcontrollers. It provides **ncnn C API** bindings, allowing you to run AI inference directly on embedded devices like ESP32, STM32 and more.
 
-## 依赖
-- [Micropython](https://micropython.org/)
+Although there exist Python bindings for `ncnn`, `ncnn_mp` enables developers to use `ncnn` features with an object-oriented and Pythonic API on embedded platforms.
+
+## Features
+
+- **Pythonic Object-Oriented API**: ncnn's C-style handles are transformed into Python objects (`Allocator`, `Option`, `Mat`, `Blob`, `ParamDict`, `DataReader`, `ModelBin`, `Layer`, `Net`, and `Extractor`).
+- **Designed for MCUs**: Use a wrapper around the **ncnn C API**, making it ideal for devices with limited memory and processing power.
+- **Great Developer Experience**: Includes a `.pyi` stub file, providing full **autocompletion**, **type hints**, and **inline documentation** in modern IDEs.
+- **Cross-Platform**: Easily buildable for various MicroPython ports, with examples for Unix and ESP32-S3.
+
+---
+
+## Build
+
+### Dependencies
+
 - [ncnn](https://github.com/Tencent/ncnn)
-- CMake/GNU Make
+- [MicroPython](https://github.com/micropython/micropython)
+- CMake / GNU Make
 
-## 构建
-MicroPython 针对不同的端口可能需要不同的构建工具，以下列举一些端口的示例供参考：
+### Get Ready
 
-### Linux: 使用 Make
-1. ncnn
 ```bash
+git submodule update --init --recursive
+```
+
+### Build for Linux (Unix Port, Make)
+
+1.  **Build ncnn**
+
+```bash
+cd ncnn
 mkdir build && cd build
 # Example: a relatively feature-rich configuration
 cmake -DCMAKE_BUILD_TYPE=Release -DNCNN_OPENMP=OFF -DNCNN_SIMPLEOMP=ON -DNCNN_VULKAN=ON -DNCNN_BUILD_BENCHMARK=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=./install ..
 make -j4
 make install
 ```
-2. mpy
+
+2.  **Build MicroPython Firmware**
+
 ```bash
 cd micropython/ports/unix/
 make -C ../../mpy-cross -j4
@@ -32,26 +52,32 @@ make USER_C_MODULES=../../../modules USE_VULKAN=1 -j4
 ./build-standard/micropython ../../../examples/main.py
 ```
 
-> 如果你需要进行 debug ，请将 `CMAKE_BUILD_TYPE` 改为 `DEBUG` ，并使用 `make USER_C_MODULES=../../../modules USE_VULKAN=1 NCNN_INSTALL_PREFIX=../../../ncnn/build-debug/install DEBUG=1 COPT=-O0 -j4` 这条命令。
+> **For Debugging**: Change `CMAKE_BUILD_TYPE` to `DEBUG` in the ncnn build. Then, build MicroPython with `make USER_C_MODULES=../../../modules USE_VULKAN=1 NCNN_INSTALL_PREFIX=../../../ncnn/build-debug/install DEBUG=1 COPT=-O0 -j4`.
 
-### esp32-s3: 使用 CMake
+### Build for ESP32-S3 (Cross-compilation, CMake)
 
-这里应该是交叉编译，以 Linux 操作系统为例：
+This example assumes you are building on a Linux host for an ESP32-S3 target.
 
-0. 准备工具链：`esp-idf` sdk
-```shell
+0.  **Prepare the ESP-IDF Toolchain**
+
+You can clone this repository wherever you want. When using `esp-idf` sdk, you must navigate into the repository's directory and then run `source ./export.sh` to configure the environment for your current terminal session.
+
+```bash
 git clone https://github.com/espressif/esp-idf
 cd esp-idf
 ```
-根据 Micropython 的官方文档，我们必须使用 `esp-idf` 的一些特定版本。具体支持的版本[点击可得](https://github.com/micropython/micropython/blob/744270ac1b9ed3929cd41d1a6e1f6ea0e785745d/ports/esp32/README.md?plain=1#L33-L34) （这个链接更新于 2025.08.13）。查看最新的支持版本请在[这个文档]((https://github.com/micropython/micropython/blob/master/ports/esp32/README.md))中进行搜索查找。
-```shell
+
+MicroPython requires a specific version of `esp-idf`. As of _2025.08_, the supported versions are `v5.2`, `v5.2.2`, `v5.3`, `v5.4`, `v5.4.1` and `v5.4.2`. Please check the [official MicroPython esp32 port documentation](https://github.com/micropython/micropython/blob/master/ports/esp32/README.md) for the latest version list.
+
+```bash
 git checkout v5.4.2
 git submodule update --init --recursive
 sh ./install.sh esp32s3
-source export.sh
+source ./export.sh
 ```
 
-1. ncnn
+1.  **Build ncnn for ESP32-S3**
+
 ```bash
 cd ncnn
 mkdir build-esp32s3 && cd build-esp32s3
@@ -61,7 +87,8 @@ make -j4
 make install
 ```
 
-2. micropython
+2.  **Build MicroPython Firmware**
+
 ```bash
 cd micropython/ports/esp32
 make -C ../../mpy-cross -j4
@@ -69,13 +96,24 @@ make submodules BOARD=ESP32_GENERIC_S3 -j4
 idf.py -D MICROPY_BOARD=ESP32_GENERIC_S3 -D USER_C_MODULES=../../../../modules/ncnn_mp/micropython.cmake -D NCNN_INSTALL_PREFIX=../../../../ncnn/build-esp32s3/install build
 ```
 
-3. 烧录
+3.  **Flash to Device**
+
 ```bash
-idf.py -p /dev/ttyACM0 erase-flash  # [optional]擦除开发板整个 Flash 芯片上的内容
+# [Optional]: Erase the entire flash chip
+idf.py -p /dev/ttyACM0 erase-flash
+
+# Flash the new firmware
 idf.py -p /dev/ttyACM0 flash
-idf.py -p /dev/ttyACM0 monitor  # 也可以 tio /dev/ttyACM0
+
+# Monitor the device's output
+# Same as: tio /dev/ttyACM0
+idf.py -p /dev/ttyACM0 monitor
 ```
 
-参考: 
-- esp-idf官方指导: https://docs.espressif.com/projects/esp-idf/zh_CN/stable/esp32s3/get-started/index.html
-- 如果你使用 wsl: https://learn.microsoft.com/zh-cn/windows/wsl/connect-usb#attach-a-usb-device
+---
+
+## References
+- MicroPython doc for external C modules: [MicroPython external C modules](https://docs.micropython.org/en/latest/develop/cmodules.html)
+- How to build minimal ncnn library: [build minimal library](https://github.com/Tencent/ncnn/wiki/build-minimal-library)
+- ESP-IDF Official Guide for ESP32-S3: [Get Started](https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/get-started/index.html)
+- Using USB devices with WSL: [Connect USB devices](https://learn.microsoft.com/en-us/windows/wsl/connect-usb#attach-a-usb-device)

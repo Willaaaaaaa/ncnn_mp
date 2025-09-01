@@ -4,14 +4,16 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'examples/**'
+      - 'examples/test_api.py'
       - 'modules/**'
+      - '!modules/stub/ncnn_mp.pyi'
       - '.github/workflows/unix-test.yml'
   pull_request:
     branches: [ master ]
     paths:
-      - 'examples/**'
+      - 'examples/test_api.py'
       - 'modules/**'
+      - '!modules/stub/ncnn_mp.pyi'
       - '.github/workflows/unix-test.yml'
 
 jobs:
