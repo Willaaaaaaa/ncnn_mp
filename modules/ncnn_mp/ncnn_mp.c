@@ -1856,6 +1856,107 @@ static int generic_forward_inplace_n(const ncnn_layer_t layer, ncnn_mat_t* botto
     return mp_obj_get_int(result);
 }
 
+// Generic load_param function
+static int generic_load_param(ncnn_layer_t layer, const ncnn_paramdict_t pd) {
+    mp_obj_t self = (mp_obj_t)layer->userdata;
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_load_param, dest);
+
+    // ncnn_paramdict_t -> Python: ncnn_mp.ParamDict()
+    ncnn_mp_ParamDict_obj_t *pd_obj = mp_obj_malloc_with_finaliser(sizeof(ncnn_mp_ParamDict_obj_t), &ncnn_mp_type_ParamDict);
+    pd_obj->pd = (ncnn_paramdict_t)pd;
+    pd_obj->is_wrapper = true;
+
+    // instance.load_param(pd_obj)
+    mp_obj_t call_args[2 + 1];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(pd_obj);
+
+    mp_obj_t result = mp_call_method_n_kw(1, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
+// Generic load_model function
+static int generic_load_model(ncnn_layer_t layer, const ncnn_modelbin_t mb) {
+    mp_obj_t self = (mp_obj_t)layer->userdata;
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_load_model, dest);
+
+    ncnn_mp_ModelBin_obj_t *mb_obj = mp_obj_malloc_with_finaliser(sizeof(ncnn_mp_ModelBin_obj_t), &ncnn_mp_type_ModelBin);
+    mb_obj->mb = (ncnn_modelbin_t)mb;
+    mb_obj->is_wrapper = true;
+
+    // instance.load_model(mb_obj)
+    mp_obj_t call_args[2 + 1];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(mb_obj);
+
+    mp_obj_t result = mp_call_method_n_kw(1, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
+// Generic create_pipeline function (for vulkan)
+static int generic_create_pipeline(ncnn_layer_t layer, const ncnn_option_t opt) {
+    mp_obj_t self = (mp_obj_t)layer->userdata;
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_create_pipeline, dest);
+
+    ncnn_mp_Option_obj_t *opt_obj = mp_obj_malloc_with_finaliser(sizeof(ncnn_mp_Option_obj_t), &ncnn_mp_type_Option);
+    opt_obj->option = (ncnn_option_t)opt;
+    opt_obj->is_wrapper = true;
+
+    // instance.create_pipeline(opt_obj)
+    mp_obj_t call_args[2 + 1];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(opt_obj);
+
+    mp_obj_t result = mp_call_method_n_kw(1, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
+// Generic destroy_pipeline function (for vulkan)
+static int generic_destroy_pipeline(ncnn_layer_t layer, const ncnn_option_t opt) {
+    mp_obj_t self = (mp_obj_t)layer->userdata;
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_destroy_pipeline, dest);
+
+    ncnn_mp_Option_obj_t *opt_obj = mp_obj_malloc_with_finaliser(sizeof(ncnn_mp_Option_obj_t), &ncnn_mp_type_Option);
+    opt_obj->option = (ncnn_option_t)opt;
+    opt_obj->is_wrapper = true;
+
+    // instance.destroy_pipeline(opt_obj)
+    mp_obj_t call_args[2 + 1];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(opt_obj);
+
+    mp_obj_t result = mp_call_method_n_kw(1, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
 // Generic layer creator function
 static ncnn_layer_t generic_creator(void* userdata) {
     // Init
@@ -1887,6 +1988,10 @@ static ncnn_layer_t generic_creator(void* userdata) {
     mp_obj_t attr;
     bool one_blob_only = false;
     bool support_inplace = false;
+    bool support_vulkan = false;
+    bool support_packing = false;
+    bool support_bf16_storage = false;
+    bool support_fp16_storage = false;
     
     attr = mp_load_attr(instance_obj, MP_QSTR_one_blob_only);
     if (mp_obj_is_true(attr)) {
@@ -1899,9 +2004,32 @@ static ncnn_layer_t generic_creator(void* userdata) {
         ncnn_layer_set_support_inplace(c_layer, 1);
         support_inplace = true;
     }
+
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_vulkan);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_vulkan(c_layer, 1);
+        support_vulkan = true;
+    }
+
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_packing);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_packing(c_layer, 1);
+        support_packing = true;
+    }
+
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_bf16_storage);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_bf16_storage(c_layer, 1);
+        support_bf16_storage = true;
+    }
+
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_fp16_storage);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_fp16_storage(c_layer, 1);
+        support_fp16_storage = true;
+    }
     
     // Hook up the generic C funcs to call the C layer's function pointers.
-    // TODO: Add more attribute checks here (support_vulkan, support_packing)
     if (one_blob_only) {
         if (support_inplace) {
             if (mp_load_attr(instance_obj, MP_QSTR_forward_inplace) == MP_OBJ_NULL) {
@@ -1919,13 +2047,33 @@ static ncnn_layer_t generic_creator(void* userdata) {
              if (mp_load_attr(instance_obj, MP_QSTR_forward_inplace) == MP_OBJ_NULL) {
                 mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer supports inplace (multi-blob) but is missing 'forward_inplace' method"));
             }
-            c_layer->forward_inplace_N = generic_forward_inplace_n;
+            c_layer->forward_inplace_n = generic_forward_inplace_n;
         } else {
             if (mp_load_attr(instance_obj, MP_QSTR_forward) == MP_OBJ_NULL) {
                 mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer (multi-blob) is missing 'forward' method"));
             }
-            c_layer->forward_N = generic_forward_n;
+            c_layer->forward_n = generic_forward_n;
         }
+    }
+
+    if (support_vulkan) {
+        if (mp_load_attr(instance_obj, MP_QSTR_create_pipeline) != MP_OBJ_NULL) {
+            c_layer->create_pipeline = generic_create_pipeline;
+        } else {
+            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer supports vulkan but is missing 'create_pipeline' method"));
+        }
+        // The following methods are optional
+        if (mp_load_attr(instance_obj, MP_QSTR_destroy_pipeline) != MP_OBJ_NULL) {
+            c_layer->destroy_pipeline = generic_destroy_pipeline;
+        }
+    }
+
+    if (mp_load_attr(instance_obj, MP_QSTR_load_param) != MP_OBJ_NULL) {
+        c_layer->load_param = generic_load_param;
+    }
+
+    if (mp_load_attr(instance_obj, MP_QSTR_load_model) != MP_OBJ_NULL) {
+        c_layer->load_model = generic_load_model;
     }
 
     return c_layer;
@@ -1949,7 +2097,6 @@ static void generic_destroyer(ncnn_layer_t layer, void* /*userdata*/) {
 
 // Net.register_custom_layer(type_or_index, layer_class)
 static mp_obj_t ncnn_net_register_custom_layer(mp_uint_t n_args, const mp_obj_t *args) {
-    // mp_arg_check_num(n_args, 0, 3, 3, false);
     ncnn_net_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_obj_t type_arg = args[1];
     mp_obj_t class_arg = args[2];
@@ -1957,7 +2104,6 @@ static mp_obj_t ncnn_net_register_custom_layer(mp_uint_t n_args, const mp_obj_t 
         mp_raise_msg(&mp_type_TypeError, MP_ERROR_TEXT("Net.register_custom_layer failed: The second parameter must be a callable class"));
     }
 
-    // TODO
     void* userdata = (void*)class_arg;
 
     if (mp_obj_is_str(type_arg)) {
@@ -1977,29 +2123,6 @@ static mp_obj_t ncnn_net_register_custom_layer(mp_uint_t n_args, const mp_obj_t 
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Net_register_custom_layer_obj, 3, 3, ncnn_mp_Net_register_custom_layer);
-
-// Net.register_custom_layer()
-// TODO
-static mp_obj_t ncnn_mp_Net_register_custom_layer(size_t n_args, const mp_obj_t *args) {
-    ncnn_mp_Net_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    ncnn_layer_creator_t creator = (ncnn_layer_creator_t)mp_obj_get_int(args[2]);
-    ncnn_layer_destroyer_t destroyer = (ncnn_layer_destroyer_t)mp_obj_get_int(args[3]);
-    void* userdata = (void*)mp_obj_get_int(args[4]);
-
-    if (mp_obj_is_str(args[1])) {
-        #if NCNN_STRING
-        const char* type = mp_obj_str_get_str(args[1]);
-        ncnn_net_register_custom_layer_by_type(self->net, type, creator, destroyer, userdata);
-        #else
-        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Net.register_custom_layer failed: Register by 'type' requires NCNN_STRING=ON"));
-        #endif
-    } else {
-        int typeindex = mp_obj_get_int(args[1]);
-        ncnn_net_register_custom_layer_by_typeindex(self->net, typeindex, creator, destroyer, userdata);
-    }
-    return mp_const_none;
-}
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Net_register_custom_layer_obj, 5, 5, ncnn_mp_Net_register_custom_layer);
 
 // Net.load_param()
 static mp_obj_t ncnn_mp_Net_load_param(mp_obj_t self_in, mp_obj_t source_obj) {
