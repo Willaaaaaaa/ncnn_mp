@@ -8,7 +8,7 @@ def detect_squeezenet(image_bytes, width, height):
     squeezenet.load_param("modules/squeezenet_v1.1.param")
     squeezenet.load_model("modules/squeezenet_v1.1.bin")
 
-    in_mat = ncnn_mp.Mat.from_pixels_resize(image_bytes, 2, width, height, width * 3, 227, 227)
+    in_mat = ncnn_mp.Mat.from_pixels_resize(image_bytes, ncnn_mp.Mat.PIXEL_BGR, width, height, width * 3, 227, 227)
 
     mean_vals = struct.pack('3f', 104.0, 117.0, 123.0)
     in_mat.substract_mean_normalize(mean_vals, None)

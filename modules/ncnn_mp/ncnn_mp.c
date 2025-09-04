@@ -971,6 +971,13 @@ static const mp_rom_map_elem_t ncnn_mp_Mat_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_pixels_resize), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_resize_classmethod_obj) },
     { MP_ROM_QSTR(MP_QSTR_from_pixels_roi), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_roi_classmethod_obj) },
     { MP_ROM_QSTR(MP_QSTR_from_pixels_roi_resize), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_roi_resize_classmethod_obj) },
+
+    // Macros
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_RGB), MP_ROM_INT(1) },
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_BGR), MP_ROM_INT(2) },
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_GRAY), MP_ROM_INT(3) },
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_RGBA), MP_ROM_INT(4) },
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_BGRA), MP_ROM_INT(5) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_copy_make_border), MP_ROM_PTR(&ncnn_mp_Mat_copy_make_border_obj) },
     { MP_ROM_QSTR(MP_QSTR_copy_cut_border), MP_ROM_PTR(&ncnn_mp_Mat_copy_cut_border_obj) },

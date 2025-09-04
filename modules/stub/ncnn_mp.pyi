@@ -68,6 +68,12 @@ class Option:
 class Mat:
     """Represent an ncnn matrix or multi-dimensional tensor."""
 
+    PIXEL_RGB: int = 1
+    PIXEL_BGR: int = 2
+    PIXEL_GRAY: int = 3
+    PIXEL_RGBA: int = 4
+    PIXEL_BGRA: int = 5
+
     def __init__(
         self,
         w: int = 0,
