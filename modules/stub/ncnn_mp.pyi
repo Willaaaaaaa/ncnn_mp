@@ -1,4 +1,4 @@
-from typing import Any, Type, overload
+from typing import Any, Type, Union, overload
 from typing_extensions import Self
 
 def version() -> str:
@@ -688,18 +688,26 @@ class Net:
         ...
 
     @overload
-    def register_custom_layer(self, type: str, layer_class: Type[Layer]) -> None: ...
-    @overload
-    def register_custom_layer(self, typeindex: int, layer_class: Type[Layer]) -> None: ...
-    def register_custom_layer(self, identifier, layer_class):
+    def register_custom_layer(self, type: str, layer_class: Type[Layer]) -> None:
         """
-        DO NOT USE THIS API
+        Register a custom layer class with the network using its type name.
 
-        Register a custom layer implementation.
-        
-        **WARNING**: This API is WIP and unusable from Python.
+        Args:
+            type (str): The type name of the custom layer (e.g., "MyLayer").
+            layer_class (Type[Layer]): The Python class that implements the custom layer logic.
         """
         ...
+    @overload
+    def register_custom_layer(self, typeindex: int, layer_class: Type[Layer]) -> None:
+        """
+        Register a custom layer class with the network using its type index.
+
+        Args:
+            typeindex (int): The type index of the custom layer.
+            layer_class (Type[Layer]): The Python class that implements the custom layer logic.
+        """
+        ...
+    def register_custom_layer(self, identifier: Union[str, int], layer_class: Type[Layer]) -> None: ...
 
     def load_param(self, source: str | DataReader) -> None:
         """
