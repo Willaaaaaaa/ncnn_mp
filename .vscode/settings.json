@@ -1,0 +1,5 @@
+{
+    "python.languageServer": "Pylance",
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.stubPath": "${workspaceFolder}/modules/stub"
+}
