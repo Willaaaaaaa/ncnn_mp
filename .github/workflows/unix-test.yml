@@ -74,4 +74,4 @@ jobs:
 
       - name: Run test
         run: |
-          micropython/ports/unix/build-standard/micropython examples/main.py
+          micropython/ports/unix/build-standard/micropython examples/test_api.py
