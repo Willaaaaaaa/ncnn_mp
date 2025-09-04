@@ -1777,8 +1777,7 @@ static int generic_forward_n(const ncnn_layer_t layer, const ncnn_mat_t* bottom_
 
     // top_blobs
     if (!mp_obj_is_type(result_tuple, &mp_type_tuple)) {
-        // TODO: raise error
-        return -1;
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Custom layer 'forward': expected tuple return for multi-blob output"));
     }
     size_t top_size;
     mp_obj_t *top_items;
@@ -1786,8 +1785,9 @@ static int generic_forward_n(const ncnn_layer_t layer, const ncnn_mat_t* bottom_
 
     if (top_size != (size_t)n_top) {
         // Python != ncnn expectation
-        // TODO: raise error
-        return -1;
+        mp_raise_msg_varg(&mp_type_RuntimeError, 
+            MP_ERROR_TEXT("Custom layer 'forward': output blob count mismatch (returned %d, expected %d)"), 
+            (int)top_size, n_top);
     }
 
     for (size_t i = 0; i < top_size; i++) {
