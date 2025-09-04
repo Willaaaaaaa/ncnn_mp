@@ -518,6 +518,7 @@ static mp_obj_t ncnn_mp_Mat_from_pixels(size_t n_args, const mp_obj_t *args) {
     return MP_OBJ_FROM_PTR(self);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Mat_from_pixels_obj, 6, 7, ncnn_mp_Mat_from_pixels);
+MP_DEFINE_CONST_CLASSMETHOD_OBJ(ncnn_mp_Mat_from_pixels_classmethod_obj, MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_obj));
 
 // Mat.from_pixels_resize()
 static mp_obj_t ncnn_mp_Mat_from_pixels_resize(size_t n_args, const mp_obj_t *args) {
@@ -542,6 +543,7 @@ static mp_obj_t ncnn_mp_Mat_from_pixels_resize(size_t n_args, const mp_obj_t *ar
     return MP_OBJ_FROM_PTR(self);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Mat_from_pixels_resize_obj, 8, 9, ncnn_mp_Mat_from_pixels_resize);
+MP_DEFINE_CONST_CLASSMETHOD_OBJ(ncnn_mp_Mat_from_pixels_resize_classmethod_obj, MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_resize_obj));
 
 // Mat.from_pixels_roi()
 static mp_obj_t ncnn_mp_Mat_from_pixels_roi(size_t n_args, const mp_obj_t *args) {
@@ -568,6 +570,7 @@ static mp_obj_t ncnn_mp_Mat_from_pixels_roi(size_t n_args, const mp_obj_t *args)
     return MP_OBJ_FROM_PTR(self);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Mat_from_pixels_roi_obj, 10, 11, ncnn_mp_Mat_from_pixels_roi);
+MP_DEFINE_CONST_CLASSMETHOD_OBJ(ncnn_mp_Mat_from_pixels_roi_classmethod_obj, MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_roi_obj));
 
 // Mat.from_pixels_roi_resize()
 static mp_obj_t ncnn_mp_Mat_from_pixels_roi_resize(size_t n_args, const mp_obj_t *args) {
@@ -596,7 +599,7 @@ static mp_obj_t ncnn_mp_Mat_from_pixels_roi_resize(size_t n_args, const mp_obj_t
     return MP_OBJ_FROM_PTR(self);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Mat_from_pixels_roi_resize_obj, 12, 13, ncnn_mp_Mat_from_pixels_roi_resize);
-
+MP_DEFINE_CONST_CLASSMETHOD_OBJ(ncnn_mp_Mat_from_pixels_roi_resize_classmethod_obj, MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_roi_resize_obj));
 
 // Mat.to_pixels()
 static mp_obj_t ncnn_mp_Mat_to_pixels(size_t n_args, const mp_obj_t *args) {
@@ -964,10 +967,17 @@ static const mp_rom_map_elem_t ncnn_mp_Mat_locals_dict_table[] = {
 #if NCNN_PIXEL
     { MP_ROM_QSTR(MP_QSTR_to_pixels), MP_ROM_PTR(&ncnn_mp_Mat_to_pixels_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_pixels_resize), MP_ROM_PTR(&ncnn_mp_Mat_to_pixels_resize_obj) },
-    { MP_ROM_QSTR(MP_QSTR_from_pixels), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_obj) },
-    { MP_ROM_QSTR(MP_QSTR_from_pixels_resize), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_resize_obj) },
-    { MP_ROM_QSTR(MP_QSTR_from_pixels_roi), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_roi_obj) },
-    { MP_ROM_QSTR(MP_QSTR_from_pixels_roi_resize), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_roi_resize_obj) },
+    { MP_ROM_QSTR(MP_QSTR_from_pixels), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_classmethod_obj) },
+    { MP_ROM_QSTR(MP_QSTR_from_pixels_resize), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_resize_classmethod_obj) },
+    { MP_ROM_QSTR(MP_QSTR_from_pixels_roi), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_roi_classmethod_obj) },
+    { MP_ROM_QSTR(MP_QSTR_from_pixels_roi_resize), MP_ROM_PTR(&ncnn_mp_Mat_from_pixels_roi_resize_classmethod_obj) },
+
+    // Macros
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_RGB), MP_ROM_INT(1) },
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_BGR), MP_ROM_INT(2) },
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_GRAY), MP_ROM_INT(3) },
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_RGBA), MP_ROM_INT(4) },
+    { MP_ROM_QSTR(MP_QSTR_PIXEL_BGRA), MP_ROM_INT(5) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_copy_make_border), MP_ROM_PTR(&ncnn_mp_Mat_copy_make_border_obj) },
     { MP_ROM_QSTR(MP_QSTR_copy_cut_border), MP_ROM_PTR(&ncnn_mp_Mat_copy_cut_border_obj) },
