@@ -272,7 +272,7 @@ static mp_obj_t ncnn_mp_Mat_make_new(const mp_obj_type_t *type, size_t n_args, s
         { MP_QSTR_c, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_data, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_elemsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_elempack, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_elempack, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_allocator, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
@@ -2032,26 +2032,31 @@ static ncnn_layer_t generic_creator(void* userdata) {
     }
     
     // Hook up the generic C funcs to call the C layer's function pointers.
+    mp_obj_t dest[2];
     if (one_blob_only) {
         if (support_inplace) {
-            if (mp_load_attr(instance_obj, MP_QSTR_forward_inplace) == MP_OBJ_NULL) {
+            mp_load_method_maybe(instance_obj, MP_QSTR_forward_inplace, dest);
+            if (dest[0] == MP_OBJ_NULL) {
                 mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer supports inplace but is missing 'forward_inplace' method"));
             }
             c_layer->forward_inplace_1 = generic_forward_inplace_1;
         } else {
-            if (mp_load_attr(instance_obj, MP_QSTR_forward) == MP_OBJ_NULL) {
+            mp_load_method_maybe(instance_obj, MP_QSTR_forward, dest);
+            if (dest[0] == MP_OBJ_NULL) {
                 mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer is missing 'forward' method"));
             }
             c_layer->forward_1 = generic_forward_1;
         }
     } else {
         if (support_inplace) {
-             if (mp_load_attr(instance_obj, MP_QSTR_forward_inplace) == MP_OBJ_NULL) {
+            mp_load_method_maybe(instance_obj, MP_QSTR_forward_inplace, dest);
+            if (dest[0] == MP_OBJ_NULL) {
                 mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer supports inplace (multi-blob) but is missing 'forward_inplace' method"));
             }
             c_layer->forward_inplace_n = generic_forward_inplace_n;
         } else {
-            if (mp_load_attr(instance_obj, MP_QSTR_forward) == MP_OBJ_NULL) {
+            mp_load_method_maybe(instance_obj, MP_QSTR_forward, dest);
+            if (dest[0] == MP_OBJ_NULL) {
                 mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer (multi-blob) is missing 'forward' method"));
             }
             c_layer->forward_n = generic_forward_n;
@@ -2059,22 +2064,25 @@ static ncnn_layer_t generic_creator(void* userdata) {
     }
 
     if (support_vulkan) {
-        if (mp_load_attr(instance_obj, MP_QSTR_create_pipeline) != MP_OBJ_NULL) {
-            c_layer->create_pipeline = generic_create_pipeline;
-        } else {
+        mp_load_method_maybe(instance_obj, MP_QSTR_create_pipeline, dest);
+        if (dest[0] == MP_OBJ_NULL) {
             mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer supports vulkan but is missing 'create_pipeline' method"));
         }
-        // The following methods are optional
-        if (mp_load_attr(instance_obj, MP_QSTR_destroy_pipeline) != MP_OBJ_NULL) {
+        c_layer->create_pipeline = generic_create_pipeline;
+
+        mp_load_method_maybe(instance_obj, MP_QSTR_destroy_pipeline, dest);
+        if (dest[0] != MP_OBJ_NULL) {
             c_layer->destroy_pipeline = generic_destroy_pipeline;
         }
     }
 
-    if (mp_load_attr(instance_obj, MP_QSTR_load_param) != MP_OBJ_NULL) {
+    mp_load_method_maybe(instance_obj, MP_QSTR_load_param, dest);
+    if (dest[0] != MP_OBJ_NULL) {
         c_layer->load_param = generic_load_param;
     }
 
-    if (mp_load_attr(instance_obj, MP_QSTR_load_model) != MP_OBJ_NULL) {
+    mp_load_method_maybe(instance_obj, MP_QSTR_load_model, dest);
+    if (dest[0] != MP_OBJ_NULL) {
         c_layer->load_model = generic_load_model;
     }
 

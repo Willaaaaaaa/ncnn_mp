@@ -216,13 +216,12 @@ def test_custom_layer():
         ]
         data_bytes = struct.pack(f'{len(data)}f', *data)
         a = ncnn_mp.Mat(w=24, data=data_bytes, elemsize=4, allocator=blob_allocator)
-        b = a.reshape(4, 2, 3, blob_allocator)
+        b = a.reshape(4, 2, 3, blob_allocator).clone(blob_allocator)
 
         # Run inference
         ex = net.create_extractor()
         ex.input("data", b)
         c = ex.extract("output")
-        print("111111111111111111111111111111111111111")
 
         # Check the result
         if c:
