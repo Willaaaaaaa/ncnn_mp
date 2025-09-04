@@ -21,11 +21,13 @@ typedef struct _ncnn_mp_Allocator_obj_t {
 typedef struct _ncnn_mp_Option_obj_t {
     mp_obj_base_t base;
     ncnn_option_t opt;
+    bool is_wrapper;
 } ncnn_mp_Option_obj_t;
 
 typedef struct _ncnn_mp_Mat_obj_t {
     mp_obj_base_t base;
     ncnn_mat_t mat;
+    bool is_wrapper;
 } ncnn_mp_Mat_obj_t;
 
 typedef struct _ncnn_mp_Blob_obj_t {
@@ -36,6 +38,7 @@ typedef struct _ncnn_mp_Blob_obj_t {
 typedef struct _ncnn_mp_ParamDict_obj_t {
     mp_obj_base_t base;
     ncnn_paramdict_t pd;
+    bool is_wrapper;
 } ncnn_mp_ParamDict_obj_t;
 
 typedef struct _ncnn_mp_DataReader_obj_t {
@@ -48,6 +51,7 @@ typedef struct _ncnn_mp_DataReader_obj_t {
 typedef struct _ncnn_mp_ModelBin_obj_t {
     mp_obj_base_t base;
     ncnn_modelbin_t mb;
+    bool is_wrapper;
 } ncnn_mp_ModelBin_obj_t;
 
 typedef struct _ncnn_mp_Layer_obj_t {
@@ -64,6 +68,9 @@ typedef struct _ncnn_mp_Extractor_obj_t {
     mp_obj_base_t base;
     ncnn_extractor_t ex;
 } ncnn_mp_Extractor_obj_t;
+
+static mp_obj_t custom_layer_instances = MP_OBJ_NULL;
+static mp_obj_t layer_instance_map = MP_OBJ_NULL;
 
 // ncnn_mp.version()
 static mp_obj_t ncnn_mp_version(void) {
@@ -159,6 +166,7 @@ static mp_obj_t ncnn_mp_Option_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     ncnn_mp_Option_obj_t *self = mp_obj_malloc(ncnn_mp_Option_obj_t, type);
     self->opt = ncnn_option_create();
+    self->is_wrapper = false;
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -166,7 +174,7 @@ static mp_obj_t ncnn_mp_Option_make_new(const mp_obj_type_t *type, size_t n_args
 // Usage: Auto
 static mp_obj_t ncnn_mp_Option_deinit(mp_obj_t self_in) {
     ncnn_mp_Option_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->opt) {
+    if (self->opt && !self->is_wrapper) {
         ncnn_option_destroy(self->opt);
         self->opt = NULL;
     }
@@ -264,7 +272,7 @@ static mp_obj_t ncnn_mp_Mat_make_new(const mp_obj_type_t *type, size_t n_args, s
         { MP_QSTR_c, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_data, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_elemsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_elempack, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_elempack, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_allocator, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
@@ -326,6 +334,7 @@ static mp_obj_t ncnn_mp_Mat_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     ncnn_mp_Mat_obj_t *self = mp_obj_malloc(ncnn_mp_Mat_obj_t, type);
     self->mat = mat;
+    self->is_wrapper = false;
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -333,7 +342,7 @@ static mp_obj_t ncnn_mp_Mat_make_new(const mp_obj_type_t *type, size_t n_args, s
 // Usage: Auto
 static mp_obj_t ncnn_mp_Mat_deinit(mp_obj_t self_in) {
     ncnn_mp_Mat_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->mat) {
+    if (self->mat && !self->is_wrapper) {
         ncnn_mat_destroy(self->mat);
         self->mat = NULL;
     }
@@ -365,6 +374,7 @@ static mp_obj_t ncnn_mp_Mat_clone(size_t n_args, const mp_obj_t *args) {
     }
     ncnn_mp_Mat_obj_t *cloned_self = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
     cloned_self->mat = cloned_mat;
+    cloned_self->is_wrapper = false;
     return MP_OBJ_FROM_PTR(cloned_self);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Mat_clone_obj, 1, 2, ncnn_mp_Mat_clone);
@@ -396,6 +406,7 @@ static mp_obj_t ncnn_mp_Mat_reshape(size_t n_args, const mp_obj_t *args) {
 
     ncnn_mp_Mat_obj_t *reshaped_self = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
     reshaped_self->mat = reshaped_mat;
+    reshaped_self->is_wrapper = false;
     return MP_OBJ_FROM_PTR(reshaped_self);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR(ncnn_mp_Mat_reshape_obj, 2, ncnn_mp_Mat_reshape);
@@ -412,6 +423,7 @@ static mp_obj_t ncnn_mp_Mat_flatten(mp_obj_t self_in, mp_obj_t opt_obj) {
     if (!dst->mat) {
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Mat.flatten failed"));
     }
+    dst->is_wrapper = false;
     return MP_OBJ_FROM_PTR(dst);
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_Mat_flatten_obj, ncnn_mp_Mat_flatten);
@@ -437,6 +449,7 @@ static mp_obj_t ncnn_mp_Mat_convert_packing(size_t n_args, const mp_obj_t *pos_a
     if (!dst->mat) {
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Mat.convert_packing failed"));
     }
+    dst->is_wrapper = false;
     return MP_OBJ_FROM_PTR(dst);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(ncnn_mp_Mat_convert_packing_obj, 1, ncnn_mp_Mat_convert_packing);
@@ -501,6 +514,7 @@ static mp_obj_t ncnn_mp_Mat_from_pixels(size_t n_args, const mp_obj_t *args) {
     }
     ncnn_mp_Mat_obj_t *self = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
     self->mat = mat;
+    self->is_wrapper = false;
     return MP_OBJ_FROM_PTR(self);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Mat_from_pixels_obj, 6, 7, ncnn_mp_Mat_from_pixels);
@@ -722,7 +736,7 @@ static mp_obj_t ncnn_mp_Mat_copy_make_border(size_t n_args, const mp_obj_t *pos_
     } else {
         ncnn_copy_make_border(src, dst_obj->mat, top, bottom, left, right, type, v, opt);
     }
-
+    dst_obj->is_wrapper = false;
     return MP_OBJ_FROM_PTR(dst_obj);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(ncnn_mp_Mat_copy_make_border_obj, 1, ncnn_mp_Mat_copy_make_border);
@@ -762,7 +776,7 @@ static mp_obj_t ncnn_mp_Mat_copy_cut_border(size_t n_args, const mp_obj_t *pos_a
     } else {
         ncnn_copy_cut_border(src, dst_obj->mat, top, bottom, left, right, opt);
     }
-
+    dst_obj->is_wrapper = false;
     return MP_OBJ_FROM_PTR(dst_obj);
 }
 static MP_DEFINE_CONST_FUN_OBJ_KW(ncnn_mp_Mat_copy_cut_border_obj, 1, ncnn_mp_Mat_copy_cut_border);
@@ -1024,6 +1038,7 @@ static mp_obj_t ncnn_mp_ParamDict_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     ncnn_mp_ParamDict_obj_t *self = mp_obj_malloc(ncnn_mp_ParamDict_obj_t, type);
     self->pd = ncnn_paramdict_create();
+    self->is_wrapper = false;
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -1031,7 +1046,7 @@ static mp_obj_t ncnn_mp_ParamDict_make_new(const mp_obj_type_t *type, size_t n_a
 // Usage: Auto
 static mp_obj_t ncnn_mp_ParamDict_deinit(mp_obj_t self_in) {
     ncnn_mp_ParamDict_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->pd) {
+    if (self->pd && !self->is_wrapper) {
         ncnn_paramdict_destroy(self->pd);
         self->pd = NULL;
     }
@@ -1286,13 +1301,14 @@ static mp_obj_t ncnn_mp_ModelBin_make_new(const mp_obj_type_t *type, size_t n_ar
 
     ncnn_mp_ModelBin_obj_t *self = mp_obj_malloc(ncnn_mp_ModelBin_obj_t, type);
     self->mb = mb;
+    self->is_wrapper = false;
     return MP_OBJ_FROM_PTR(self);
 }
 
 // Destructor: ModelBin.__del__()
 static mp_obj_t ncnn_mp_ModelBin_deinit(mp_obj_t self_in) {
     ncnn_mp_ModelBin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->mb) {
+    if (self->mb && !self->is_wrapper) {
         ncnn_modelbin_destroy(self->mb);
         self->mb = NULL;
     }
@@ -1561,26 +1577,21 @@ static mp_obj_t ncnn_mp_Layer_forward(size_t n_args, const mp_obj_t *args) {
         mp_obj_get_array(bottom_blobs_obj, &n_bottom, &bottom_items);
         int n_top = mp_obj_get_int(args[2]);
 
-        // TODO: maybe we don't need m_new here. try stack.
-        ncnn_mat_t* bottom_blobs = m_new(ncnn_mat_t, n_bottom);
+        ncnn_mat_t* bottom_blobs = alloca(n_bottom * sizeof(ncnn_mat_t));
         for (size_t i = 0; i < n_bottom; i++) {
             bottom_blobs[i] = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(bottom_items[i]))->mat;
         }
-        ncnn_mat_t* top_blobs = m_new(ncnn_mat_t, n_top);
+        ncnn_mat_t* top_blobs = alloca(n_top * sizeof(ncnn_mat_t));
         self->layer->forward_n(self->layer, bottom_blobs, n_bottom, top_blobs, n_top, opt);
 
-        mp_obj_t* top_items = m_new(mp_obj_t, n_top);
+        mp_obj_t* top_items = alloca(n_top * sizeof(mp_obj_t));
         for (int i = 0; i < n_top; i++) {
             ncnn_mp_Mat_obj_t *top_mat_obj = mp_obj_malloc(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
             top_mat_obj->mat = top_blobs[i];
+            top_mat_obj->is_wrapper = false;
             top_items[i] = MP_OBJ_FROM_PTR(top_mat_obj);
         }
-        mp_obj_t result_tuple = mp_obj_new_tuple(n_top, top_items);
-
-        m_del(ncnn_mat_t, bottom_blobs, n_bottom);
-        m_del(ncnn_mat_t, top_blobs, n_top);
-        m_del(mp_obj_t, top_items, n_top);
-        return result_tuple;
+        return mp_obj_new_tuple(n_top, top_items);
     }
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Layer_forward_obj, 3, 4, ncnn_mp_Layer_forward);
@@ -1597,12 +1608,11 @@ static mp_obj_t ncnn_mp_Layer_forward_inplace(mp_obj_t self_in, mp_obj_t bottom_
         size_t n;
         mp_obj_t *items;
         mp_obj_get_array(bottom_top_obj, &n, &items);
-        ncnn_mat_t* bottom_top_blobs = m_new(ncnn_mat_t, n);
+        ncnn_mat_t* bottom_top_blobs = alloca(n * sizeof(ncnn_mat_t));
         for (size_t i = 0; i < n; i++) {
             bottom_top_blobs[i] = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(items[i]))->mat;
         }
         int result = self->layer->forward_inplace_n(self->layer, bottom_top_blobs, n, opt);
-        m_del(ncnn_mat_t, bottom_top_blobs, n);
         return mp_obj_new_int(result);
     }
 }
@@ -1697,28 +1707,431 @@ static mp_obj_t ncnn_mp_Net_set_vulkan_device(mp_obj_t self_in, mp_obj_t device_
 static MP_DEFINE_CONST_FUN_OBJ_2(ncnn_mp_Net_set_vulkan_device_obj, ncnn_mp_Net_set_vulkan_device);
 #endif // NCNN_VULKAN
 
-// Net.register_custom_layer()
-// TODO
+// Generic forward function
+static int generic_forward_1(ncnn_layer_t layer, const ncnn_mat_t bottom_blob, ncnn_mat_t* top_blob, const ncnn_option_t opt) {
+    // Get instance from C layer's userdata
+    mp_obj_t self = mp_obj_dict_get(layer_instance_map, MP_OBJ_FROM_PTR(layer));
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    // Find the 'forward' method in the Python instance.
+    // dest[0] is method, dest[1] is self instance
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_forward, dest);
+
+    // Wrap C handles into MicroPython objects.
+    ncnn_mp_Mat_obj_t *bottom_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
+    bottom_obj->mat = (ncnn_mat_t)bottom_blob;
+    bottom_obj->is_wrapper = true;
+
+    ncnn_mp_Option_obj_t *opt_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Option_obj_t, &ncnn_mp_type_Option);
+    opt_obj->opt = (ncnn_option_t)opt;
+    opt_obj->is_wrapper = true;
+
+    // Call Python method: instance.forward(bottom_blob, opt)
+    mp_obj_t call_args[2 + 2];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(bottom_obj);
+    call_args[3] = MP_OBJ_FROM_PTR(opt_obj);
+
+    mp_obj_t result = mp_call_method_n_kw(2, 0, call_args);
+
+    if (!mp_obj_is_type(result, &ncnn_mp_type_Mat)) {
+        return -1;
+    }
+    *top_blob = ((ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(result))->mat;
+
+    return 0;
+}
+
+static int generic_forward_n(const ncnn_layer_t layer, const ncnn_mat_t* bottom_blobs, int n_bottom, ncnn_mat_t* top_blobs, int n_top, const ncnn_option_t opt) {
+    mp_obj_t self = mp_obj_dict_get(layer_instance_map, MP_OBJ_FROM_PTR(layer));
+    if (self == MP_OBJ_NULL) return -1;
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_forward, dest);
+
+    // bottom_blobs -> tuple
+    mp_obj_t* bottom_items = alloca(n_bottom * sizeof(mp_obj_t));
+    for (int i = 0; i < n_bottom; i++) {
+        ncnn_mp_Mat_obj_t *bottom_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
+        bottom_obj->mat = bottom_blobs[i];
+        bottom_obj->is_wrapper = true;
+        bottom_items[i] = MP_OBJ_FROM_PTR(bottom_obj);
+    }
+    mp_obj_t py_bottom_blobs = mp_obj_new_tuple(n_bottom, bottom_items);
+
+    ncnn_mp_Option_obj_t *opt_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Option_obj_t, &ncnn_mp_type_Option);
+    opt_obj->opt = (ncnn_option_t)opt;
+    opt_obj->is_wrapper = true;
+
+    // instance.forward((mat1, mat2, ...), opt)
+    mp_obj_t call_args[2 + 2];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = py_bottom_blobs;
+    call_args[3] = MP_OBJ_FROM_PTR(opt_obj);
+    mp_obj_t result_tuple = mp_call_method_n_kw(2, 0, call_args);
+
+    // top_blobs
+    if (!mp_obj_is_type(result_tuple, &mp_type_tuple)) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Custom layer 'forward': expected tuple return for multi-blob output"));
+    }
+    size_t top_size;
+    mp_obj_t *top_items;
+    mp_obj_get_array(result_tuple, &top_size, &top_items);
+
+    if (top_size != (size_t)n_top) {
+        // Python != ncnn expectation
+        mp_raise_msg_varg(&mp_type_RuntimeError, 
+            MP_ERROR_TEXT("Custom layer 'forward': output blob count mismatch (returned %d, expected %d)"), 
+            (int)top_size, n_top);
+    }
+
+    for (size_t i = 0; i < top_size; i++) {
+        ncnn_mp_Mat_obj_t* py_mat = (ncnn_mp_Mat_obj_t*)MP_OBJ_TO_PTR(top_items[i]);
+        if (!mp_obj_is_type(py_mat, &ncnn_mp_type_Mat)) {
+            return -1;
+        }
+        top_blobs[i] = py_mat->mat;
+    }
+
+    return 0;
+}
+
+// Generic forward_inplace functions
+static int generic_forward_inplace_1(const ncnn_layer_t layer, ncnn_mat_t bottom_top_blob, const ncnn_option_t opt) {
+    mp_obj_t self = mp_obj_dict_get(layer_instance_map, MP_OBJ_FROM_PTR(layer));
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_forward_inplace, dest);
+
+    ncnn_mp_Mat_obj_t *blob_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
+    blob_obj->mat = bottom_top_blob;
+    blob_obj->is_wrapper = true;
+
+    ncnn_mp_Option_obj_t *opt_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Option_obj_t, &ncnn_mp_type_Option);
+    opt_obj->opt = (ncnn_option_t)opt;
+    opt_obj->is_wrapper = true;
+
+    mp_obj_t call_args[2 + 2];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(blob_obj);
+    call_args[3] = MP_OBJ_FROM_PTR(opt_obj);
+    mp_obj_t result = mp_call_method_n_kw(2, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
+static int generic_forward_inplace_n(const ncnn_layer_t layer, ncnn_mat_t* bottom_top_blobs, int n, const ncnn_option_t opt) {
+    mp_obj_t self = mp_obj_dict_get(layer_instance_map, MP_OBJ_FROM_PTR(layer));
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_forward_inplace, dest);
+
+    mp_obj_t* py_blob_items = alloca(n * sizeof(mp_obj_t));
+    for (int i = 0; i < n; i++) {
+        ncnn_mp_Mat_obj_t *blob_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Mat_obj_t, &ncnn_mp_type_Mat);
+        blob_obj->mat = bottom_top_blobs[i];
+        blob_obj->is_wrapper = true;
+        py_blob_items[i] = MP_OBJ_FROM_PTR(blob_obj);
+    }
+    mp_obj_t py_blobs_tuple = mp_obj_new_tuple(n, py_blob_items);
+
+    ncnn_mp_Option_obj_t *opt_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Option_obj_t, &ncnn_mp_type_Option);
+    opt_obj->opt = (ncnn_option_t)opt;
+    opt_obj->is_wrapper = true;
+
+    mp_obj_t call_args[2 + 2];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = py_blobs_tuple;
+    call_args[3] = MP_OBJ_FROM_PTR(opt_obj);
+    mp_obj_t result = mp_call_method_n_kw(2, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
+// Generic load_param function
+static int generic_load_param(ncnn_layer_t layer, const ncnn_paramdict_t pd) {
+    mp_obj_t self = mp_obj_dict_get(layer_instance_map, MP_OBJ_FROM_PTR(layer));
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_load_param, dest);
+
+    // ncnn_paramdict_t -> Python: ncnn_mp.ParamDict()
+    ncnn_mp_ParamDict_obj_t *pd_obj = mp_obj_malloc_with_finaliser(ncnn_mp_ParamDict_obj_t, &ncnn_mp_type_ParamDict);
+    pd_obj->pd = (ncnn_paramdict_t)pd;
+    pd_obj->is_wrapper = true;
+
+    // instance.load_param(pd_obj)
+    mp_obj_t call_args[2 + 1];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(pd_obj);
+
+    mp_obj_t result = mp_call_method_n_kw(1, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
+// Generic load_model function
+static int generic_load_model(ncnn_layer_t layer, const ncnn_modelbin_t mb) {
+    mp_obj_t self = mp_obj_dict_get(layer_instance_map, MP_OBJ_FROM_PTR(layer));
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_load_model, dest);
+
+    ncnn_mp_ModelBin_obj_t *mb_obj = mp_obj_malloc_with_finaliser(ncnn_mp_ModelBin_obj_t, &ncnn_mp_type_ModelBin);
+    mb_obj->mb = (ncnn_modelbin_t)mb;
+    mb_obj->is_wrapper = true;
+
+    // instance.load_model(mb_obj)
+    mp_obj_t call_args[2 + 1];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(mb_obj);
+
+    mp_obj_t result = mp_call_method_n_kw(1, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
+// Generic create_pipeline function (for vulkan)
+static int generic_create_pipeline(ncnn_layer_t layer, const ncnn_option_t opt) {
+    mp_obj_t self = mp_obj_dict_get(layer_instance_map, MP_OBJ_FROM_PTR(layer));
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_create_pipeline, dest);
+
+    ncnn_mp_Option_obj_t *opt_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Option_obj_t, &ncnn_mp_type_Option);
+    opt_obj->opt = (ncnn_option_t)opt;
+    opt_obj->is_wrapper = true;
+
+    // instance.create_pipeline(opt_obj)
+    mp_obj_t call_args[2 + 1];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(opt_obj);
+
+    mp_obj_t result = mp_call_method_n_kw(1, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
+// Generic destroy_pipeline function (for vulkan)
+static int generic_destroy_pipeline(ncnn_layer_t layer, const ncnn_option_t opt) {
+    mp_obj_t self = mp_obj_dict_get(layer_instance_map, MP_OBJ_FROM_PTR(layer));
+    if (self == MP_OBJ_NULL) {
+        return -1;
+    }
+
+    mp_obj_t dest[2];
+    mp_load_method(self, MP_QSTR_destroy_pipeline, dest);
+
+    ncnn_mp_Option_obj_t *opt_obj = mp_obj_malloc_with_finaliser(ncnn_mp_Option_obj_t, &ncnn_mp_type_Option);
+    opt_obj->opt = (ncnn_option_t)opt;
+    opt_obj->is_wrapper = true;
+
+    // instance.destroy_pipeline(opt_obj)
+    mp_obj_t call_args[2 + 1];
+    call_args[0] = dest[0];
+    call_args[1] = dest[1];
+    call_args[2] = MP_OBJ_FROM_PTR(opt_obj);
+
+    mp_obj_t result = mp_call_method_n_kw(1, 0, call_args);
+
+    return mp_obj_get_int(result);
+}
+
+// Generic layer creator function
+static ncnn_layer_t generic_creator(void* userdata) {
+    // Init
+    if (custom_layer_instances == MP_OBJ_NULL) {
+        custom_layer_instances = mp_obj_new_list(0, NULL);
+    }
+
+    if (layer_instance_map == MP_OBJ_NULL) {
+        layer_instance_map = mp_obj_new_dict(0);
+    }
+
+    // 'userdata' is the Python Layer class passed from register_custom_layer.
+    mp_obj_t class_obj = (mp_obj_t)userdata;
+
+    // Instantiate the Python class to get an instance. Equivalent to `instance = MyLayer()`.
+    mp_obj_t instance_obj = mp_call_function_0(class_obj);
+    if (instance_obj == MP_OBJ_NULL) {
+        return NULL;
+    }
+    mp_obj_list_append(custom_layer_instances, instance_obj);  // add to list
+
+    // Create ncnn_layer_t object in C.
+    ncnn_layer_t c_layer = ncnn_layer_create();
+    if (!c_layer) {
+        mp_obj_list_remove(custom_layer_instances, instance_obj);
+        return NULL;
+    }
+
+    mp_obj_dict_store(layer_instance_map, MP_OBJ_FROM_PTR(c_layer), instance_obj);
+
+    // Configure the C layer based on attributes from the Python instance.
+    mp_obj_t attr;
+    bool one_blob_only = false;
+    bool support_inplace = false;
+    bool support_vulkan = false;
+    
+    attr = mp_load_attr(instance_obj, MP_QSTR_one_blob_only);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_one_blob_only(c_layer, 1);
+        one_blob_only = true;
+    }
+
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_inplace);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_inplace(c_layer, 1);
+        support_inplace = true;
+    }
+
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_vulkan);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_vulkan(c_layer, 1);
+        support_vulkan = true;
+    }
+
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_packing);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_packing(c_layer, 1);
+    }
+
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_bf16_storage);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_bf16_storage(c_layer, 1);
+    }
+
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_fp16_storage);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_fp16_storage(c_layer, 1);
+    }
+    
+    // Hook up the generic C funcs to call the C layer's function pointers.
+    mp_obj_t dest[2];
+    if (one_blob_only) {
+        if (support_inplace) {
+            mp_load_method_maybe(instance_obj, MP_QSTR_forward_inplace, dest);
+            if (dest[0] == MP_OBJ_NULL) {
+                mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer supports inplace but is missing 'forward_inplace' method"));
+            }
+            c_layer->forward_inplace_1 = generic_forward_inplace_1;
+        } else {
+            mp_load_method_maybe(instance_obj, MP_QSTR_forward, dest);
+            if (dest[0] == MP_OBJ_NULL) {
+                mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer is missing 'forward' method"));
+            }
+            c_layer->forward_1 = generic_forward_1;
+        }
+    } else {
+        if (support_inplace) {
+            mp_load_method_maybe(instance_obj, MP_QSTR_forward_inplace, dest);
+            if (dest[0] == MP_OBJ_NULL) {
+                mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer supports inplace (multi-blob) but is missing 'forward_inplace' method"));
+            }
+            c_layer->forward_inplace_n = generic_forward_inplace_n;
+        } else {
+            mp_load_method_maybe(instance_obj, MP_QSTR_forward, dest);
+            if (dest[0] == MP_OBJ_NULL) {
+                mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer (multi-blob) is missing 'forward' method"));
+            }
+            c_layer->forward_n = generic_forward_n;
+        }
+    }
+
+    if (support_vulkan) {
+        mp_load_method_maybe(instance_obj, MP_QSTR_create_pipeline, dest);
+        if (dest[0] == MP_OBJ_NULL) {
+            mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("Custom layer supports vulkan but is missing 'create_pipeline' method"));
+        }
+        c_layer->create_pipeline = generic_create_pipeline;
+
+        mp_load_method_maybe(instance_obj, MP_QSTR_destroy_pipeline, dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            c_layer->destroy_pipeline = generic_destroy_pipeline;
+        }
+    }
+
+    mp_load_method_maybe(instance_obj, MP_QSTR_load_param, dest);
+    if (dest[0] != MP_OBJ_NULL) {
+        c_layer->load_param = generic_load_param;
+    }
+
+    mp_load_method_maybe(instance_obj, MP_QSTR_load_model, dest);
+    if (dest[0] != MP_OBJ_NULL) {
+        c_layer->load_model = generic_load_model;
+    }
+
+    return c_layer;
+}
+
+// Generic layer destroyer function
+static void generic_destroyer(ncnn_layer_t layer, void* /*userdata*/) {
+    if (!layer) return;
+
+    // Get the Python instance from userdata.
+    mp_obj_t instance_obj = mp_obj_dict_delete(layer_instance_map, MP_OBJ_FROM_PTR(layer));
+
+    // Remove the instance from our global list.
+    if (instance_obj != MP_OBJ_NULL) {
+        mp_obj_list_remove(custom_layer_instances, instance_obj);
+    }
+    
+    ncnn_layer_destroy(layer);
+}
+
+// Net.register_custom_layer(type_or_index, layer_class)
 static mp_obj_t ncnn_mp_Net_register_custom_layer(size_t n_args, const mp_obj_t *args) {
     ncnn_mp_Net_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    ncnn_layer_creator_t creator = (ncnn_layer_creator_t)mp_obj_get_int(args[2]);
-    ncnn_layer_destroyer_t destroyer = (ncnn_layer_destroyer_t)mp_obj_get_int(args[3]);
-    void* userdata = (void*)mp_obj_get_int(args[4]);
+    mp_obj_t type_arg = args[1];
+    mp_obj_t class_arg = args[2];
+    if (!mp_obj_is_callable(class_arg)) {
+        mp_raise_msg(&mp_type_TypeError, MP_ERROR_TEXT("Net.register_custom_layer failed: The second parameter must be a callable class"));
+    }
 
-    if (mp_obj_is_str(args[1])) {
+    void* userdata = (void*)class_arg;
+
+    if (mp_obj_is_str(type_arg)) {
         #if NCNN_STRING
-        const char* type = mp_obj_str_get_str(args[1]);
-        ncnn_net_register_custom_layer_by_type(self->net, type, creator, destroyer, userdata);
+        const char* type_name = mp_obj_str_get_str(type_arg);
+        ncnn_net_register_custom_layer_by_type(self->net, type_name, generic_creator, generic_destroyer, userdata);
         #else
         mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Net.register_custom_layer failed: Register by 'type' requires NCNN_STRING=ON"));
         #endif
+    } else if (mp_obj_is_int(type_arg)) {
+        int type_index = mp_obj_get_int(type_arg);
+        ncnn_net_register_custom_layer_by_typeindex(self->net, type_index, generic_creator, generic_destroyer, userdata);
     } else {
-        int typeindex = mp_obj_get_int(args[1]);
-        ncnn_net_register_custom_layer_by_typeindex(self->net, typeindex, creator, destroyer, userdata);
+        mp_raise_msg(&mp_type_TypeError, MP_ERROR_TEXT("Net.register_custom_layer failed: The first parameter must be a string or an integer"));
     }
+
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Net_register_custom_layer_obj, 5, 5, ncnn_mp_Net_register_custom_layer);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ncnn_mp_Net_register_custom_layer_obj, 3, 3, ncnn_mp_Net_register_custom_layer);
 
 // Net.load_param()
 static mp_obj_t ncnn_mp_Net_load_param(mp_obj_t self_in, mp_obj_t source_obj) {

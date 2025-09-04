@@ -161,8 +161,6 @@ def test_net_extractor():
     
     return success
 
-'''
-TODO
 class MyLayer(ncnn_mp.Layer):
     def __init__(self):
         super().__init__() 
@@ -207,7 +205,8 @@ def test_custom_layer():
         param_str = "7767517\n2 2\nInput input 0 1 data\nMyLayer mylayer 1 1 data output\0"
         param_dr = ncnn_mp.DataReader(from_memory=param_str)
         net.load_param(param_dr)
-        # No model file is needed
+
+        net.load_model(ncnn_mp.DataReader(from_memory=b''))
 
         # Prepare input data
         data = [
@@ -216,14 +215,14 @@ def test_custom_layer():
             20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0
         ]
         data_bytes = struct.pack(f'{len(data)}f', *data)
-        a = ncnn_mp.Mat(w=24, data=data_bytes, elemsize=4, allocator=blob_allocator)
+        a = ncnn_mp.Mat(w=24, elemsize=4, allocator=blob_allocator)
+        a.from_bytes(data_bytes)
         b = a.reshape(4, 2, 3, blob_allocator)
 
         # Run inference
         ex = net.create_extractor()
         ex.input("data", b)
         c = ex.extract("output")
-        print("111111111111111111111111111111111111111")
 
         # Check the result
         if c:
@@ -247,22 +246,20 @@ def test_custom_layer():
         success = False
 
     return success
-'''
 
 if __name__ == "__main__":
     result1 = test_binary_op()
     result2 = test_reorg_layer()
     result3 = test_net_extractor()
-    # result4 = test_custom_layer()
+    result4 = test_custom_layer()
     
     print("--- TEST SUMMARY ---")
     print(f"test_binary_op:     {'PASSED' if result1 else 'FAILED'}")
     print(f"test_reorg_layer:   {'PASSED' if result2 else 'FAILED'}")
     print(f"test_net_extractor: {'PASSED' if result3 else 'FAILED'}")
-    # print(f"test_custom_layer:  {'PASSED' if result4 else 'FAILED'}")
+    print(f"test_custom_layer:  {'PASSED' if result4 else 'FAILED'}")
 
-    if result1 and result2 and result3:
-    # if result1 and result2 and result3 and result4:
+    if result1 and result2 and result3 and result4:
         print("\nAll tests passed!")
     else:
         print("\nSome tests failed.")
