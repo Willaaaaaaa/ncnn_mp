@@ -16,12 +16,13 @@ FORMAT_CONFIG = {
 
 def convert_image(source_path, target_format):
     if not os.path.exists(source_path):
-        raise ValueError(f"file '{source_path}' not exist")
+        print(f"\033[31mError: file '{source_path}' not found.\033[0m", file=sys.stderr)
+        return None
 
     try:
         img = Image.open(source_path)
     except Exception as e:
-        print(f"\033[31mError occur when trying to open img file '{source_path}'\n  - Reason: \033[1m{e}\033[0m")
+        print(f"\033[31mError occur when trying to open img file '{source_path}'\n  - Reason: \033[1m{e}\033[0m", file=sys.stderr)
         return None
 
     config = FORMAT_CONFIG[target_format]
@@ -40,18 +41,18 @@ def convert_image(source_path, target_format):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print(f"\033[1;31mUsage:\033[0m python {sys.argv[0]} <format> <file1.png> <file2.jpg> ...")
-        print(f"       python {sys.argv[0]} ppm *.png")
-        print(f"       python {sys.argv[0]} pgm *.jpg")
-        print(f"\033[1;31mSupported formats:\033[0m {', '.join(FORMAT_CONFIG.keys())}")
+        print(f"\033[1;31mUsage:\033[0m python {sys.argv[0]} <format> <file1.png> <file2.jpg> ...", file=sys.stderr)
+        print(f"       python {sys.argv[0]} ppm *.png", file=sys.stderr)
+        print(f"       python {sys.argv[0]} pgm *.jpg", file=sys.stderr)
+        print(f"\033[1;31mSupported formats:\033[0m {', '.join(FORMAT_CONFIG.keys())}", file=sys.stderr)
         sys.exit(1)
 
     output_format = sys.argv[1].lower()
     target = sys.argv[2:]
 
     if output_format not in FORMAT_CONFIG:
-        print(f"\033[1;31mError:\033[0m Unsupported format '{output_format}'.")
-        print(f"Supported formats are: {', '.join(FORMAT_CONFIG.keys())}")
+        print(f"\033[1;31mError:\033[0m Unsupported format '{output_format}'.", file=sys.stderr)
+        print(f"Supported formats are: {', '.join(FORMAT_CONFIG.keys())}", file=sys.stderr)
         sys.exit(1)
 
     print(f"Total: {len(target)} file(s) to convert to {output_format.upper()}")

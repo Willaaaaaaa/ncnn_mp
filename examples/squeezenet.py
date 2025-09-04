@@ -59,7 +59,7 @@ def read_ppm(filepath):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print(f"\033[1;31mUsage:\033[0m {sys.argv[0]} [imagepath]")
+        print(f"\033[1;31mUsage:\033[0m {sys.argv[0]} [imagepath]", file=sys.stderr)
         sys.exit(-1)
 
     imagepath = sys.argv[1]
