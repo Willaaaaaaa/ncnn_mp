@@ -110,6 +110,12 @@ idf.py -p /dev/ttyACM0 monitor
 
 ---
 
+## 致谢
+
+- 特别感谢 [@nihui](https://github.com/nihui) 大佬 创造了 `ncnn` 这个优秀的开源项目，并为其持续发展做出了不懈的努力！
+
+---
+
 ## 参考资料
 - MicroPython 外部 C 模块文档: [MicroPython external C modules](https://docs.micropython.org/en/latest/develop/cmodules.html)
 - 如何构建最小化的 ncnn 库: [build minimal library](https://github.com/Tencent/ncnn/wiki/build-minimal-library)

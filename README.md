@@ -112,6 +112,12 @@ idf.py -p /dev/ttyACM0 monitor
 
 ---
 
+## Acknowledgements
+
+- A special thanks to [@nihui](https://github.com/nihui) for creating the amazing `ncnn` project and for the tireless work dedicated to its continued development.
+
+---
+
 ## References
 - MicroPython doc for external C modules: [MicroPython external C modules](https://docs.micropython.org/en/latest/develop/cmodules.html)
 - How to build minimal ncnn library: [build minimal library](https://github.com/Tencent/ncnn/wiki/build-minimal-library)
