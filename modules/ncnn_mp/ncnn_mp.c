@@ -1,6 +1,7 @@
 #include "py/runtime.h"
 #include "py/obj.h"
 #include "ncnn/c_api.h"
+#include <string.h>
 
 extern const mp_obj_type_t ncnn_mp_type_Allocator;
 extern const mp_obj_type_t ncnn_mp_type_Option;
