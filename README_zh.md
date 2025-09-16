@@ -110,6 +110,14 @@ idf.py -p /dev/ttyACM0 monitor
 
 ---
 
+## 教程与示例
+
+- **@nihui 教程**：由 ncnn 作者 [@nihui](https://github.com/nihui) 撰写的教程，介绍如何在 FireBeetle 2 ESP32-P4 硬件上使用 `ncnn_mp` 运行 `mnist` 和 `SqueezeNet` 图像分类。[点击此处阅读全文](https://bbs.eeworld.com.cn/thread-1327010-1-1.html)
+
+- **代码示例**：请参阅 [`./examples`](./examples) 文件夹中提供的文件。（注意：这些示例主要是在 **Unix port** 下编写的，在其他平台上可能需要修改。）
+
+---
+
 ## 致谢
 
 - 特别感谢 [@nihui](https://github.com/nihui) 大佬 创造了 `ncnn` 这个优秀的开源项目，并为其持续发展做出了不懈的努力！
