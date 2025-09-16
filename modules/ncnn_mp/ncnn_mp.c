@@ -2,6 +2,8 @@
 #include "py/obj.h"
 #include "ncnn/c_api.h"
 #include <string.h>
+#include <errno.h>
+#include <stdio.h>
 
 extern const mp_obj_type_t ncnn_mp_type_Allocator;
 extern const mp_obj_type_t ncnn_mp_type_Option;
@@ -2152,6 +2154,11 @@ static mp_obj_t ncnn_mp_Net_load_param(mp_obj_t self_in, mp_obj_t source_obj) {
     if (mp_obj_is_str(source_obj)) {
         #if NCNN_STDIO
         result = ncnn_net_load_param(self->net, mp_obj_str_get_str(source_obj));
+        if (result != 0) {
+            mp_printf(&mp_plat_print, "--------------------------\n");
+            mp_printf(&mp_plat_print, "-- errno =  %d\n", errno);
+            mp_printf(&mp_plat_print, "--------------------------\n");
+        }
         #else
         mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Net.load_param failed: load_param from file path requires NCNN_STDIO"));
         #endif
@@ -2211,6 +2218,11 @@ static mp_obj_t ncnn_mp_Net_load_model(mp_obj_t self_in, mp_obj_t source_obj) {
         #if NCNN_STDIO
         const char* path = mp_obj_str_get_str(source_obj);
         result = ncnn_net_load_model(self->net, path);
+        if (result != 0) {
+            mp_printf(&mp_plat_print, "--------------------------\n");
+            mp_printf(&mp_plat_print, "-- errno =  %d\n", errno);
+            mp_printf(&mp_plat_print, "--------------------------\n");
+        }
         #else
         mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("Net.load_model failed: load_model from file path requires NCNN_STDIO"));
         #endif
