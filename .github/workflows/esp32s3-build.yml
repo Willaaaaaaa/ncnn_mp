@@ -49,21 +49,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ncnn/build-esp32s3/install
-          key: ${{ runner.os }}-ncnn-esp32s3-${{ steps.get_ncnn_hash.outputs.hash }}
-          restore-keys: |
-            ${{ runner.os }}-ncnn-esp32s3-
+          key: ncnn-esp32s3-${{ steps.get_ncnn_hash.outputs.hash }}
 
       - name: Get micropython commit hash
         id: get_mpy_hash
         run: echo "hash=$(git rev-parse HEAD:micropython)" >> $GITHUB_OUTPUT
-      - name: Cache mpy-cross compiler
+      - name: Cache mpy-cross
         id: cache-mpy-cross
         uses: actions/cache@v4
         with:
           path: micropython/mpy-cross/build
-          key: ${{ runner.os }}-mpy-cross-${{ steps.get_mpy_hash.outputs.hash }}
-          restore-keys: |
-            ${{ runner.os }}-mpy-cross-
+          key: mpy-cross-${{ steps.get_mpy_hash.outputs.hash }}
 
       - name: Build ncnn for esp32-s3
         if: steps.cache-ncnn.outputs.cache-hit != 'true'
