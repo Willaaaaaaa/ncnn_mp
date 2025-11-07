@@ -530,6 +530,7 @@ class Layer:
     support_inplace: bool
     support_vulkan: bool
     support_packing: bool
+    support_vulkan_packing: bool
     support_bf16_storage: bool
     support_fp16_storage: bool
 

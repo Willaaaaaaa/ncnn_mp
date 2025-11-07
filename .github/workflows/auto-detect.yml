@@ -9,6 +9,8 @@ jobs:
   detect:
     name: Check ncnn c_api files
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - name: Installation gh
         run: |
@@ -17,8 +19,6 @@ jobs:
           sudo apt update
           sudo apt install -y gh
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-          # git config --global user.email "Willaaaaaaa936@gmail.com"
-          # git config --global user.name "Willaaaaaaa"
 
       - name: Compare hash values
         id: commit_hash
