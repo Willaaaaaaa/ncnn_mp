@@ -1495,12 +1495,12 @@ static void ncnn_mp_Layer_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = mp_obj_new_bool(ncnn_layer_get_support_vulkan(self->layer));
         } else if (attr == MP_QSTR_support_packing) {
             dest[0] = mp_obj_new_bool(ncnn_layer_get_support_packing(self->layer));
+        } else if (attr == MP_QSTR_support_vulkan_packing) {
+            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_vulkan_packing(self->layer));
         } else if (attr == MP_QSTR_support_bf16_storage) {
             dest[0] = mp_obj_new_bool(ncnn_layer_get_support_bf16_storage(self->layer));
         } else if (attr == MP_QSTR_support_fp16_storage) {
             dest[0] = mp_obj_new_bool(ncnn_layer_get_support_fp16_storage(self->layer));
-        } else if (attr == MP_QSTR_support_vulkan_packing) {
-            dest[0] = mp_obj_new_bool(ncnn_layer_get_support_vulkan_packing(self->layer));
         } else if (attr == MP_QSTR_bottom_count) {
             dest[0] = mp_obj_new_int(ncnn_layer_get_bottom_count(self->layer));
         } else if (attr == MP_QSTR_top_count) {
@@ -1521,14 +1521,14 @@ static void ncnn_mp_Layer_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         } else if (attr == MP_QSTR_support_packing) {
             ncnn_layer_set_support_packing(self->layer, mp_obj_is_true(dest[1]));
             dest[0] = MP_OBJ_NULL;
+        } else if (attr == MP_QSTR_support_vulkan_packing) {
+            ncnn_layer_set_support_vulkan_packing(self->layer, mp_obj_is_true(dest[1]));
+            dest[0] = MP_OBJ_NULL;
         } else if (attr == MP_QSTR_support_bf16_storage) {
             ncnn_layer_set_support_bf16_storage(self->layer, mp_obj_is_true(dest[1]));
             dest[0] = MP_OBJ_NULL;
         } else if (attr == MP_QSTR_support_fp16_storage) {
             ncnn_layer_set_support_fp16_storage(self->layer, mp_obj_is_true(dest[1]));
-            dest[0] = MP_OBJ_NULL;
-        } else if (attr == MP_QSTR_support_vulkan_packing) {
-            ncnn_layer_set_support_vulkan_packing(self->layer, mp_obj_is_true(dest[1]));
             dest[0] = MP_OBJ_NULL;
         } else {
             dest[1] = MP_OBJ_SENTINEL;
@@ -2037,6 +2037,11 @@ static ncnn_layer_t generic_creator(void* userdata) {
         ncnn_layer_set_support_packing(c_layer, 1);
     }
 
+    attr = mp_load_attr(instance_obj, MP_QSTR_support_vulkan_packing);
+    if (mp_obj_is_true(attr)) {
+        ncnn_layer_set_support_vulkan_packing(c_layer, 1);
+    }
+
     attr = mp_load_attr(instance_obj, MP_QSTR_support_bf16_storage);
     if (mp_obj_is_true(attr)) {
         ncnn_layer_set_support_bf16_storage(c_layer, 1);
@@ -2045,11 +2050,6 @@ static ncnn_layer_t generic_creator(void* userdata) {
     attr = mp_load_attr(instance_obj, MP_QSTR_support_fp16_storage);
     if (mp_obj_is_true(attr)) {
         ncnn_layer_set_support_fp16_storage(c_layer, 1);
-    }
-
-    attr = mp_load_attr(instance_obj, MP_QSTR_support_vulkan_packing);
-    if (mp_obj_is_true(attr)) {
-        ncnn_layer_set_support_vulkan_packing(c_layer, 1);
     }
 
     // Hook up the generic C funcs to call the C layer's function pointers.
