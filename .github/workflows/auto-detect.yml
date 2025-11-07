@@ -1,0 +1,75 @@
+name: Auto-detection for ncnn c api
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  detect:
+    name: Check ncnn c_api files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Installation gh
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install -y gh
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          # git config --global user.email "Willaaaaaaa936@gmail.com"
+          # git config --global user.name "Willaaaaaaa"
+
+      - name: Compare hash values
+        id: commit_hash
+        run: |
+          CURR_COMMIT_HASH=$(curl -s https://api.github.com/repos/willaaaaaaa/ncnn_mp/contents/ncnn?ref=master | grep sha | cut -d '"' -f4)
+          UPSTREAM_H_HASH=$(curl -sL https://raw.githubusercontent.com/Tencent/ncnn/master/src/c_api.h | sha256sum | cut -d ' ' -f1)
+          UPSTREAM_C_HASH=$(curl -sL https://raw.githubusercontent.com/Tencent/ncnn/master/src/c_api.c | sha256sum | cut -d ' ' -f1)
+          CURR_H_HASH=$(curl -sL https://raw.githubusercontent.com/Tencent/ncnn/$CURR_COMMIT_HASH/src/c_api.h | sha256sum | cut -d ' ' -f1)
+          CURR_C_HASH=$(curl -sL https://raw.githubusercontent.com/Tencent/ncnn/$CURR_COMMIT_HASH/src/c_api.c | sha256sum | cut -d ' ' -f1)
+
+          IS_CHANGED=F
+          BODY_CONTENT="Changes:"
+
+          if [ "$UPSTREAM_C_HASH" != "$CURR_C_HASH" ]; then
+            echo "c_api.c changed!"
+            IS_CHANGED=T
+            BODY_CONTENT="${BODY_CONTENT}\n- \`c_api.c\`: curr_hash = \`$CURR_C_HASH\`, upstream_hash = \`UPSTREAM_C_HASH\`"
+          fi
+
+          if [ "$UPSTREAM_H_HASH" != "$CURR_H_HASH" ]; then
+            echo "c_api.h changed!"
+            IS_CHANGED=T
+            BODY_CONTENT="${BODY_CONTENT}\n- \`c_api.h\`: curr_hash = \`$CURR_H_HASH\`, upstream_hash = \`UPSTREAM_H_HASH\`"
+          fi
+
+          # latest message
+          UPDATE_MSG="Current \`ncnn\` commit hash is $CURR_COMMIT_HASH, which is old. Please take a look at `Tencent/ncnn` for the latest changes.\n${BODY_CONTENT}"
+
+          # get issue number and issue body if they exist
+          ISSUE_NUM=$(gh issue list -l "auto-detect" --json number -q ".[0].number" -R Willaaaaaaa/ncnn_mp)
+          if [ -n "$ISSUE_NUM" ]; then
+            BODY_EXIST=$(gh issue view $ISSUE_NUM --json body -q ".body" -R Willaaaaaaa/ncnn_mp)
+          fi
+
+          # check whether ncnn c api is outdated
+          if [ "$IS_CHANGED" = T ]; then
+            echo "Changes detected"
+
+            # already have unsolved updates and no new updates -> do nothing
+            if [ -n "$BODY_EXIST" ] && [ "$BODY_EXIST" = "$UPDATE_MSG" ]; then
+              exit 0
+            fi
+
+            # already have unsolved updates and have new updates -> comment
+            if [ -n "$BODY_EXIST" ] && [ "$BODY_EXIST" != "$UPDATE_MSG" ]; then
+              gh issue comment $ISSUE_NUM --body "$UPDATE_MSG" -R Willaaaaaaa/ncnn_mp
+              exit 0
+            fi
+
+            # complete new updates -> create an issue
+            gh issue create -t "[ncnn c api] Upstream changes detected" -b "$UPDATE_MSG" -l "auto-detect" -R Willaaaaaaa/ncnn_mp
+          else
+            echo "No need to update"
+          fi
