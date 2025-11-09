@@ -24,28 +24,29 @@ jobs:
         id: commit_hash
         run: |
           CURR_COMMIT_HASH=$(curl -s https://api.github.com/repos/willaaaaaaa/ncnn_mp/contents/ncnn?ref=master | grep sha | cut -d '"' -f4)
+          UPSTREAM_NCNN_HASH=$(curl -s https://api.github.com/repos/Tencent/ncnn/git/refs/heads/master | grep sha | cut -d '"' -f4)
           UPSTREAM_H_HASH=$(curl -sL https://raw.githubusercontent.com/Tencent/ncnn/master/src/c_api.h | sha256sum | cut -d ' ' -f1)
           UPSTREAM_CPP_HASH=$(curl -sL https://raw.githubusercontent.com/Tencent/ncnn/master/src/c_api.cpp | sha256sum | cut -d ' ' -f1)
           CURR_H_HASH=$(curl -sL https://raw.githubusercontent.com/Tencent/ncnn/"$CURR_COMMIT_HASH"/src/c_api.h | sha256sum | cut -d ' ' -f1)
-          CURR_C_HASH=$(curl -sL https://raw.githubusercontent.com/Tencent/ncnn/"$CURR_COMMIT_HASH"/src/c_api.cpp | sha256sum | cut -d ' ' -f1)
+          CURR_CPP_HASH=$(curl -sL https://raw.githubusercontent.com/Tencent/ncnn/"$CURR_COMMIT_HASH"/src/c_api.cpp | sha256sum | cut -d ' ' -f1)
 
           IS_CHANGED=F
-          BODY_CONTENT="Changes:"
+          BODY_CONTENT="## Changes:"
 
-          if [ "$UPSTREAM_CPP_HASH" != "$CURR_C_HASH" ]; then
+          if [ "$UPSTREAM_CPP_HASH" != "$CURR_CPP_HASH" ]; then
             echo "c_api.cpp changed!"
             IS_CHANGED=T
-            BODY_CONTENT="${BODY_CONTENT}\n- \`c_api.cpp\`: curr_hash = \`$CURR_C_HASH\`, upstream_hash = \`UPSTREAM_CPP_HASH\`"
+            BODY_CONTENT="${BODY_CONTENT}$'\n'- \`c_api.cpp\`: curr_hash = \`$CURR_CPP_HASH\`, upstream_hash = \`$UPSTREAM_CPP_HASH\`"
           fi
 
           if [ "$UPSTREAM_H_HASH" != "$CURR_H_HASH" ]; then
             echo "c_api.h changed!"
             IS_CHANGED=T
-            BODY_CONTENT="${BODY_CONTENT}\n- \`c_api.h\`: curr_hash = \`$CURR_H_HASH\`, upstream_hash = \`UPSTREAM_H_HASH\`"
+            BODY_CONTENT="${BODY_CONTENT}$'\n'- \`c_api.h\`: curr_hash = \`$CURR_H_HASH\`, upstream_hash = \`$UPSTREAM_H_HASH\`"
           fi
 
           # latest message
-          UPDATE_MSG="Current \`ncnn\` commit hash is $CURR_COMMIT_HASH, which is old. Please take a look at https://github.com/Tencent/ncnn for the latest changes.\n${BODY_CONTENT}"
+          UPDATE_MSG="Current \`ncnn\` commit hash is \`$CURR_COMMIT_HASH\`, which is old. Please take a look at https://github.com/Tencent/ncnn/blob/"$UPSTREAM_NCNN_HASH"/src/c_api.cpp and https://github.com/Tencent/ncnn/blob/"$UPSTREAM_NCNN_HASH"/src/c_api.h for the latest changes.$'\n'${BODY_CONTENT}"
 
           # get issue number and issue body if they exist
           ISSUE_NUM=$(gh issue list -l "auto-detect" --json number -q ".[0].number" -R Willaaaaaaa/ncnn_mp)
@@ -56,6 +57,7 @@ jobs:
           # check whether ncnn c api is outdated
           if [ "$IS_CHANGED" = T ]; then
             echo "Changes detected"
+            echo "$UPDATE_MSG"
 
             # already have unsolved updates and no new updates -> do nothing
             if [ -n "$BODY_EXIST" ] && [ "$BODY_EXIST" = "$UPDATE_MSG" ]; then
